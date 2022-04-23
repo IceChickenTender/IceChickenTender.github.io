@@ -15,11 +15,11 @@
 minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise" # 블로그의 전체적인 색감을 정하는 변수
 
 # Site Settings
-locale                   : "ko-KR" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
+locale                   : "ko-KR로" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
 title                    : "개발자로 열심히 살아보려는 개발자의 블로그" #사이트 탭에서 보이는 변수
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
-name                     : "이승욱(LeeSeungWook)" # 왼쪽 화면에 이름이 표시되는 변수
+name                     : "이승욱(LeeSeungWook)" # 블로그 화면 하단 영역의 이름에 표시되는 이름 입니다
 description              : "다른 개발자에게 도움이 되는 블로그가 되고자 합니다"
 url                      : "https://icechickentender.github.io" # 현재 블로그의 url 자신의 github pages url을 넣으면 됩니다 the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
@@ -102,10 +102,10 @@ analytics:
 
 # Site Author
 author:
-  name             : "Your Name"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "I am an **amazing** person."
-  location         : "Somewhere"
+  name             : "이쿼카" # 왼쪽 프로필 화면에서 이름을 나타냄
+  avatar           : "/assets/images/profile_image.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg" 프로파일 이미지 지정하는 곳
+  bio              : "I am an **amazing** Quokka."
+  location         : "Republic ofo Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
   email            :
   links:
     - label: "Email"
@@ -113,18 +113,18 @@ author:
       # url: "mailto:your.name@email.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
-      # url: "https://your-website.com"
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
+      url: "https://icechickentender.github.io"
+    #- label: "Twitter"
+    #  icon: "fab fa-fw fa-twitter-square"
       # url: "https://twitter.com/"
-    - label: "Facebook"
-      icon: "fab fa-fw fa-facebook-square"
+    #- label: "Facebook"
+    #  icon: "fab fa-fw fa-facebook-square"
       # url: "https://facebook.com/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       # url: "https://github.com/"
-    - label: "Instagram"
-      icon: "fab fa-fw fa-instagram"
+    #- label: "Instagram"
+    #  icon: "fab fa-fw fa-instagram"
       # url: "https://instagram.com/"
 
 # Site Footer
@@ -216,7 +216,7 @@ sass:
 
 # Outputting
 permalink: /:categories/:title/
-paginate: 5 # amount of posts to show
+paginate: 5 # amount of posts to show 첫 화면에 보여줄 게시물 개수
 paginate_path: /page:num/
 timezone: # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
@@ -288,3 +288,11 @@ defaults:
       comments: # true
       share: true
       related: true
+
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+        layout: single
+        author_profile: true
+
