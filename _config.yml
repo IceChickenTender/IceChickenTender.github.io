@@ -12,16 +12,16 @@
 
 # theme                  : "minimal-mistakes-jekyll"
 # remote_theme           : "mmistakes/minimal-mistakes"
-minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise" # 블로그의 전체적인 색감을 정하는 변수
 
 # Site Settings
-locale                   : "en-US"
-title                    : "Site Title"
+locale                   : "en-US" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
+title                    : "개발자로 열심히 살아보려는 개발자의 블로그" #사이트 탭에서 보이는 변수
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
-name                     : "Your Name"
-description              : "An amazing website."
-url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
+name                     : "이승욱(LeeSeungWook)" # 왼쪽 화면에 이름이 표시되는 변수
+description              : "다른 개발자에게 도움이 되는 블로그가 되고자 합니다"
+url                      : "https://icechickentender.github.io" # 현재 블로그의 url 자신의 github pages url을 넣으면 됩니다 the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
