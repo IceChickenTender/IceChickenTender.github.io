@@ -15,7 +15,7 @@
 minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise" # 블로그의 전체적인 색감을 정하는 변수
 
 # Site Settings
-locale                   : "en-US" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
+locale                   : "ko-KR" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
 title                    : "개발자로 열심히 살아보려는 개발자의 블로그" #사이트 탭에서 보이는 변수
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
