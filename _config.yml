@@ -108,9 +108,9 @@ author:
   location         : "Republic ofo Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
   email            :
   links:
-    - label: "Email"
+    - label: "Email(이메일 확인이 늦어질 수 있습니다)"
       icon: "fas fa-fw fa-envelope-square"
-      # url: "mailto:your.name@email.com"
+      url: "mailto:seungwooklee76@gmail.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       url: "https://icechickentender.github.io"
