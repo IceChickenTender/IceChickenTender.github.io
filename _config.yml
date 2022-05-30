@@ -108,7 +108,7 @@ author:
   location         : "Republic ofo Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
   email            :
   links:
-    - label: "Email(이메일 확인이 늦어질 수 있습니다)"
+    - label: "Email<br>이메일 확인이 늦어질 수 있습니다"
       icon: "fas fa-fw fa-envelope-square"
       url: "mailto:seungwooklee76@gmail.com"
     - label: "Website"
@@ -290,7 +290,7 @@ defaults:
       related: true
 
   - scope:
-      path: "_pages"
+      path: ""
       type: pages
     values:
         layout: single
