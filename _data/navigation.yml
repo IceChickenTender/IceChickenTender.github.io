@@ -1,11 +1,13 @@
 # main links
 main:
-  - title: "Quick-Start Guide"
-    url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
-  - title: "Introduce"
-    url: /about/
-  - title: "Category"
+  - title: "Introduce" # 클릭 시 자기 프로필 내용 게시판으로 이동
+    url: /introduce/
+  - title: "Category" # 클릭 시 내용 카테고리별로 정리 한 게시판으로 이동
     url: /categories/
+  - title: "Tag" # 클릭 시 tag 별로 정리한 게시판으로 이동
+    url: /tags/
+  - title: "Year" # 클릭 시 년도 별로 정리한 게시판으로 이동
+    url: /years/
   # - title: "About"
   #   url: https://mmistakes.github.io/minimal-mistakes/about/
   # - title: "Sample Posts"

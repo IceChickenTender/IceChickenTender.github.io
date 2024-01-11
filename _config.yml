@@ -16,17 +16,17 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "ko-KR로" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
-title                    : "개발자로 열심히 살아보려는 개발자의 블로그" #사이트 탭에서 보이는 변수
+title                    : "라승의 blog" #사이트 탭에 표시됩니다.
 title_separator          : "-"
-subtitle                 : # site tagline that appears below site title in masthead
-name                     : "이승욱(LeeSeungWook)" # 블로그 화면 하단 영역의 이름에 표시되는 이름 입니다
-description              : "다른 개발자에게 도움이 되는 블로그가 되고자 합니다"
+subtitle                 : "version 1.0" # 화면 title 하단에 있는 소제목입니다.
+name                     : "이승욱(LeeSeungWook)" # 블로그 화면 왼쪽 하단 영역의 이름에 표시되는 이름 입니다
+description              : "다른 개발자에게 도움이 되는 블로그가 되고자 합니다" #어디에 표시되는건지 잘 모르겠지만 일단 이렇게 작성 했습니다.
 url                      : "https://icechickentender.github.io" # 현재 블로그의 url 자신의 github pages url을 넣으면 됩니다 the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
-baseurl                  : # the subpath of your site, e.g. "/blog"
-repository               : # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
-teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
-logo                     : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
-masthead_title           : # overrides the website title displayed in the masthead, use " " for no title
+baseurl                  : # 폴백(예기치 못한 오류)일 때 연결되는 url 입니다.
+repository               : # Github Repo url 입니다.
+teaser                   : # 폴백일 때 보일 이미지입니다. "/assets/images/500x300.png"
+logo                     : # 왼쪽 화면에 내 프로필 이미지 입니다. 빈 값이면 ./assets/images에 있는 이미지를 사용합니다.
+masthead_title           : "메모하려고 만든 blog" # 화면 왼쪽 상단에 표시 됩니다. 이 값이 빈 값이면 title 변수에 있는 값을 사용하게 됩니다.
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
@@ -103,9 +103,9 @@ analytics:
 # Site Author
 author:
   name             : "이쿼카" # 왼쪽 프로필 화면에서 이름을 나타냄
-  avatar           : "/assets/images/profile_image.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg" 프로파일 이미지 지정하는 곳
+  avatar           : "/assets/images/profile_image.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg" 프로필 이미지 지정하는 곳
   bio              : "I am an **amazing** Quokka."
-  location         : "Republic ofo Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
+  location         : "Republic of Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
   email            :
   links:
     - label: "Email<br>이메일 확인이 늦어질 수 있습니다"
