@@ -126,6 +126,8 @@ blockquote {
 /* links */
 
 a {
+  text-decoration: none; // 하이퍼링크에 밑줄을 없앨려면 추가
+
   &:focus {
     @extend %tab-focus;
   }
