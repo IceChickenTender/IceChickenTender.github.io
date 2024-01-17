@@ -10,9 +10,9 @@
 # Review documentation to determine if you should use `theme` or `remote_theme`
 # https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/#installing-the-theme
 
-# theme                  : "minimal-mistakes-jekyll"
+#theme                  : "minimal-mistakes-jekyll"
 # remote_theme           : "mmistakes/minimal-mistakes"
-minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise" # 블로그의 전체적인 색감을 정하는 변수
+minimal_mistakes_skin    : "dark" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise" # 블로그의 전체적인 색감을 정하는 변수
 
 # Site Settings
 locale                   : "ko-KR로" #블로그의 주요 언어 영어는 en-US, 한국어는 ko-KR로 설정 다른 언어가 있을 경우에는 추가 예정
