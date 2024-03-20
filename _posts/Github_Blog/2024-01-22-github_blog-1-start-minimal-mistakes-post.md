@@ -1,5 +1,5 @@
 ---
-title: "[Github_Blog] minimal mistakes 시작하기"
+title: "[Github_Blog] 1. minimal mistakes 시작하기"
 categories:
   - Github_Blog
 tags:

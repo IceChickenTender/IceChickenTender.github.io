@@ -1,5 +1,5 @@
 ---
-title: "[Github_Blog] 포스팅 글 써보기"
+title: "[Github_Blog] 4. 포스팅 글 써보기"
 categories:
   - Github_Blog
 tags:
@@ -42,5 +42,14 @@ toc에 연동된 헤더(Header)가 등록이 되고 등록된 헤더(Header)를 
 <div align="center">
 	<img src="/assets/images/github_blog/4/posts_folder.png" width="50%" height="50%" title="1234" alt="1234"/>
 </div>
+
+## 3. 포스터 양식 확인
+
+categories, tags 형식이 맞지 않으면 포스트가 제대로 업로드 되지 않음 그래서 처음 포스트를 작성한다면 ./docs/posts 에 있는 아무 포스트 내용을 복사해서 필요없는 부분을 지우고 사용하는 것을 추천
+
+<figure class="half">
+	<img src="/assets/images/github_blog/4/1.png" style="width:50%">
+	<img src="/assets/images/github_blog/4/2.png" style="width:50%">
+</figure>
 
 

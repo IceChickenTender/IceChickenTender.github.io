@@ -1,5 +1,5 @@
 ---
-title: "[Github_Blog] _config.yml 파일 수정하기"
+title: "[Github_Blog] 2. _config.yml 파일 수정하기"
 categories:
   - Github_Blog
 tags:

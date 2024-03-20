@@ -1,5 +1,5 @@
 ---
-title: "[Github_Blog] Category 세팅하기 "
+title: "[Github_Blog] 3. Category 세팅하기 "
 categories:
   - Github_Blog
 tags:
@@ -28,5 +28,5 @@ toc_label: "Category 세팅"
 - navigation.yml에서 설정한 분류 항목들에 대한 설정을 진행합니다.
 
 <div align="center">
-  <img src="/assets/images/intoruce.png" width="90%" height="90%" title="introduce" alt="introduce"/>
+  <img src="/assets/images/github_blog/3/intoruce.png" width="90%" height="90%" title="introduce" alt="introduce"/>
 </div>

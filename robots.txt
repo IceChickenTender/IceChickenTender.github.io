@@ -2,3 +2,48 @@ User-agent: *
 Allow: /
 
 Sitemap: https://icechickentender.github.io/sitemap.xml
+
+mvn -X deploy:deploy-file -DgroupId=com.diquest.dqframe -DartifactId=dq_util -Dversion=1.0.2 -Dpackaging=jar -Dfile=./dq_util-1.0.2.jar -DrepositoryId=diquest-release -Durl=http://125.6.36.19:9015/repository/maven-diquest-release
+
+행복한 여행의 시작 롯데 인터넷 면세점 김재선 입니다 한강 롯데 인터넷에서 가능 한가요
+
+최장일치 : 시작 롯데 인터넷 면세점 김재선, 한강 롯데 인터넷
+
+bigram : 시작 롯데, 롯데 인터넷, 인터넷 면세점, 면세점 김재선, 한강 롯데, 롯데 인터넷
+
+trigram : 시작 롯데 인터넷, 롯데 인터넷 면세점, 인터넷 면세점 김재선, 한강 롯데 인터넷
+
+시작롯데인터넷면세점김재선 : 1
+한강롯데인터넷 : 2
+면세점김재선 : 1
+한강롯데 : 1
+시작롯데인터넷 : 1
+롯데인터넷면세점 : 1
+인터넷 면세점 김재선 : 1
+롯데인터넷 : 2
+시작롯데 : 1
+롯데인터넷 : 1
+인터넷면세점 : 1
+
+
+시작롯데인터넷면세점김재선=1
+한강롯데인터넷=1
+면세점김재선=1
+한강롯데=1
+시작롯데인터넷=1
+롯데인터넷면세점=1
+인터넷면세점김재선=1
+롯데인터넷=2
+인터넷면세점=1
+시작롯데=1
+
+시작롯데인터넷면세점김재선=1
+한강롯데인터넷=2
+면세점김재선=1
+한강롯데=1
+시작롯데인터넷=1
+롯데인터넷면세점=1
+인터넷면세점김재선=1
+롯데인터넷=2
+인터넷면세점=1
+시작롯데=1
