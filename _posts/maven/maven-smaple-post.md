@@ -1,9 +1,9 @@
 ---
-title: "[jenkins]"
+title: "[maven]"
 categories:
-  - jenkins
+  - maven
 tags:
-  - jenkins
+  - maven
 toc: true
 toc_sticky: true
 toc_label: ""
