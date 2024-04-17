@@ -4,6 +4,7 @@ categories:
   - jenkins
 tags:
   - jenkins
+  - error
 toc: true
 toc_sticky: true
 toc_label: "Cannot Find Symbol"
