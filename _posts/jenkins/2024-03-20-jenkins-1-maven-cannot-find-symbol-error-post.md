@@ -1,10 +1,10 @@
 ---
-title: "[jenkins] jenkins 빌드 시 발생하는 Maven Cannot Find Symbol Error 처리 방법"
+title: "[Jenkins] jenkins 빌드 시 발생하는 Maven Cannot Find Symbol Error 처리 방법"
 categories:
-  - jenkins
+  - Jenkins
 tags:
-  - jenkins
-  - error
+  - Jenkins
+  - Error
 toc: true
 toc_sticky: true
 toc_label: "Cannot Find Symbol"

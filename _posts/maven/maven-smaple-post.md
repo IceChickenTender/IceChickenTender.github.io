@@ -1,9 +1,9 @@
 ---
-title: "[maven]"
+title: "[Maven]"
 categories:
-  - maven
+  - Maven
 tags:
-  - maven
+  - Maven
 toc: true
 toc_sticky: true
 toc_label: ""

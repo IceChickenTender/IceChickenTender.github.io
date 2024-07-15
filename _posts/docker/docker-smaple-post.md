@@ -1,9 +1,9 @@
 ---
-title: "[docker]"
+title: "[Docker]"
 categories:
-  - docker
+  - Docker
 tags:
-  - docker
+  - Docker
 toc: true
 toc_sticky: true
 toc_label: ""

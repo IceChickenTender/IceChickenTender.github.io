@@ -1,9 +1,9 @@
 ---
-title: "[jenkins]"
+title: "[Jenkins]"
 categories:
-  - jenkins
+  - Jenkins
 tags:
-  - jenkins
+  - Jenkins
 toc: true
 toc_sticky: true
 toc_label: ""
