@@ -1,9 +1,9 @@
 ---
 title: "[Python]"
 categories:
-  - python
+  - Python
 tags:
-  - python
+  - Python
   
 toc: true
 toc_sticky: true
