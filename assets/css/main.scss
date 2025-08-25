@@ -7,3 +7,10 @@
 //@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // 혹시 모르니 기존 코드 주석
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin }}"; // skin
 @import "minimal-mistakes"; // main partials
+
+// 코드 블럭 자동 줄바꿈 적용
+pre {
+  white-space: pre-wrap;   // 기본 pre 대신 줄바꿈 허용
+  word-wrap: break-word;   // 긴 단어도 줄바꿈
+  overflow-x: visible;     // 가로 스크롤 제거
+}
