@@ -31,8 +31,8 @@ toc_label: "Minimal Mistakes 코드 블럭 자동 줄바꿈"
 
 github blog 를 관리하고 있는 디렉토리로 가서 `_sass/minimal-mistkaes/_custom.scss` 또는 최종적으로 scss import 를 진행하는 `assets/css/main.scss` 파일에 아래와 같은 내용을 추가해 주세요
 
-{% include code-header.html %}
-```
+
+```scss
 // 코드 블럭 자동 줄바꿈 적용
 pre {
   white-space: pre-wrap;   // 기본 pre 대신 줄바꿈 허용
@@ -43,7 +43,7 @@ pre {
 
 저는 `assets/css/main.scss` 파일에 수정 내용을 적용하였습니다만 만약 `_sass/minimal-mistakes/_custom.scss` 에 수정을 하였는데 적용이 되지 않는다면 `assets/css/main.scss` 를 확인해 보시고 만약 아래와 같이 `import`가 되어 있지 않다면 `import` 시켜주시기 바랍니다.
 
-```
+```scss
 @import "minimal-mistakes";
 ```
 
