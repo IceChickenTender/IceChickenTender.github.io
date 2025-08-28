@@ -565,31 +565,21 @@ body {
 
 .code-header {
   position: relative;
-  top: 50px;
-  right: 10px;
+  top: 0;  // 자동 주입 시 컨테이너 첫 줄에 오므로 0부터 시작
   z-index: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .copy-code-button {
-  float: right;
   cursor: pointer;
   background-color: $code-background-color;
-  padding: 5px 5px;
-  border-radius: 5px;
-  width: 30px;
-  height: 35px;
-  margin-top: -40px;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 6px;
   border: none;
+  margin: .4rem;
+  font-size: .8rem;
 }
 
-.copy-code-button:focus {
-  outline: none;
-}
-
-.copy-code-button:hover {
-  background-color: #0f1214;
-}
-
-.copy-code-image {
-  filter: invert(1);
-}
+.copy-code-button:hover { background-color: #0f1214; }

@@ -207,6 +207,9 @@ kramdown:
   enable_coderay: false
   math_engine: mathjax
   input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block: {line_numbers: false}
 
 
 # Sass/SCSS

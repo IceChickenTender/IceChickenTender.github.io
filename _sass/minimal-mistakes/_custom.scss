@@ -1,0 +1,58 @@
+/* 헤더와 코드 본문의 좌우 패딩을 '같게' 맞춰 정렬 */
+.highlighter-rouge > .highlight > .code-header,
+figure.highlight > .code-header,
+.highlight > .code-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+
+  /* 패딩은 JS에서 동기화해 주지만, 기본값을 넣어 둡니다 */
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+
+  /* (선택) 배경을 코드 블록과 동일하게 하고 싶으면 유지 */
+  background: $code-background-color;
+  position: relative;
+  z-index: 3;
+}
+
+/* 배지는 header 패딩에 맞춰 정렬 → margin 제거 */
+.code-header .code-lang-badge {
+  margin: 0 !important;
+  padding: .15rem .5rem;
+  font-size: .75rem;
+  line-height: 1;
+  border-radius: .4rem;
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+  user-select: none;
+}
+
+/* 헤더가 없을 때를 위한 보강(그대로 유지) */
+.highlight, .highlighter-rouge, figure.highlight { position: relative; }
+.has-lang-badge::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: .6rem;
+  left: 1rem;         /* 헤더 기본값과 맞춤 */
+  z-index: 2;
+  display: inline-block;
+  padding: .15rem .5rem;
+  font-size: .75rem;
+  line-height: 1;
+  border-radius: .4rem;
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+  user-select: none;
+}
+
+/* 코드 본문 패딩(테마가 다르면 0일 수 있으니 기본값 보강) */
+.highlight pre {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  box-sizing: border-box;
+}

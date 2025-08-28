@@ -21,4 +21,8 @@
 <div class="page__footer-copyright">&copy; {{ site.time | date: '%Y' }} {{ site.name | default: site.title }}. {{ site.data.ui-text[site.locale].powered_by | default: "Powered by" }} <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
 <!-- 파일 최하단에 추가해요. -->
-<script src="/assets/scripts/copyCode.js"></script>
+<script src="{{ '/assets/scripts/copy-code-auto.js' | relative_url }}" defer></script>
+
+<!-- 코드 블럭 코드 언어 배치 삽입에 필요 -->
+<script src="{{ '/assets/js/code-lang-label.js' | relative_url }}" defer></script>
+
