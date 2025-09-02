@@ -8,6 +8,9 @@
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin }}"; // skin
 @import "minimal-mistakes"; // main partials
 
+// 사용자 정의 오버라이드
+@import "custom/custom";
+
 // 코드 블럭 자동 줄바꿈 적용
 pre {
   white-space: pre-wrap;   // 기본 pre 대신 줄바꿈 허용
