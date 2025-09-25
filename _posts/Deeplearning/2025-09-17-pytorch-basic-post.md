@@ -460,7 +460,7 @@ with torch.no_grad():
 ```
 
 <div align="center">
-  <img src="/assets/images/deeplearning/pytorch/loss_graph.png" width="60%" height="50%"/>
+  <img src="/assets/images/deeplearning/pytorch/basic/loss_graph.png" width="60%" height="50%"/>
 </div>
 
 # 3. 데이터 불러오기
@@ -550,7 +550,7 @@ plt.show()
 ```
 
 <div align="center">
-  <img src="/assets/images/deeplearning/pytorch/CIFAR10_sample.png" width="40%" height="30%"/>
+  <img src="/assets/images/deeplearning/pytorch/basic/CIFAR10_sample.png" width="40%" height="30%"/>
 </div>
 
 # 마치며
