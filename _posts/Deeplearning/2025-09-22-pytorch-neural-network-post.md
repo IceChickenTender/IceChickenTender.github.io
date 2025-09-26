@@ -322,3 +322,386 @@ Test RMSE: 0.1078935584512692
 $$
 \mathrm{MAE}=\frac{1}{n}\sum_{i=1}^{n}\lvert y_i-\hat{y}_i\rvert
 $$
+
+## 3.2 MSE(Mean Squared Error) - torch.nn.MSELoss
+
+MAE 와 함께 유사도, 거리 측정, 회귀 문제 등에 많이 사용되는 손실 함수입니다. MAE 와의 차이는 MSE 는 큰 오차에 강한 벌점이 필요하거나, 미분 가능하고 매끄러운 손실이 학습에 유리할 때 주로 사용합니다.
+
+$$
+\text{MSE} \;=\; \frac{1}{n}\sum_{i=1}^{n}\bigl(y_i - \hat{y}_i\bigr)^2
+$$
+
+## 3.3 Cross Entroypy Loss
+
+주로 다중 분류 문제에서 사용되며, 분류에서 모델이 정답 클래스에 높게, 오답에는 낮게 확률을 주도록 학습시키는 손실 함수 입니다. 유의할 점은 파이토치에서는 예측값은 벡터 형태, 타깃값은 라벨 형태로 세팅해야 에러가 나지 않습니다.
+
+$$
+CE = -\frac{1}{n}\sum_{i=1}^{n} y_i \log \frac{e^{\hat y_i}}{\sum_{j=1}^{n} e^{\hat y_j}}
+$$
+
+# 4. 최적화 기법
+
+인공 신경망은 예측한 값과 타깃값을 정량적으로 비교할 수 있는 손실 함수를 통해 모델을 평가할 수 있습니다. 따라서 일반적으로 손실 함수값이 작다는 의미는 예측값과 타깃값의 차이가 작다라는 의미이므로 손실 함수값이 작게 나오게 하는 모델의 변수를 구하는 것이 최적화의 목적입니다. 그림과 같과 같이 손실 함수가 그려져 있고 현재 모델의 변수가 $w_o$ 라고 한다면 손실 함수값이 가장 작게 나오게 하는 변수 $w^\*$ 를 찾는게 목적이 되는 것입니다. 직관적으로 경사가 떨어지는 방향으로 간다면 우리가 원하는 이상적인 값을 얻을 수 있습니다. 이를 경사하강법(Gradient Descent)이라고 합니다.
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/gradient_descent_graph.png" width="50%" height="40%"/>
+</div>
+
+경사를 의미하는 미분을 이용해 $w$ 를 업데이트 하는데, 이 때 하강에 대한 보폭을 정해주는 값이 학습률(Learning rate 또는 Step size)입니다.
+
+$$
+w \leftarrow w - \mu\frac{\partial L}{\partial w}
+$$
+
+최적화 문제는 깊게 들어가면 복잡한 수식과 증명들을 볼 수 있습니다. 다행히 파이토치는 계산을 자동으로 해주는 다양한 최적화 기법들을 제공하기 때문에 최적화 기법에 대한 하이퍼파라미터(Hyper-Parameter)만 신경써주면 됩니다. 하이퍼 파라미터란 제안된 방법론을 사용하기 위해 미리 선택하여 사용되는 변수를 의미하며, 예를 들면 학습률이 있습니다.
+
+## 4.1 확률적 경사하강법(SGD) - torch.optim.SGD
+
+경사하강법의 특징은 모든 변수의 미분을 계산해 한 번에 갱신한다는 것입니다. 따라서 노드 수와 가중치 수 그리고 데이터가 많을 경우에는 연산량이 많아 모델의 학습 속도가 느려지며, 계산에 필요한 메모리가 부족한 경우가 발생할 수 있습니다. 이를 해결하기 위해 데이터를 나눠서 학습하는 방법이 널리 쓰입니다. 만약 n 개의 데이터가 있다면 임의로 k 개의 데이터 묶음을 만들어 학습을 진행합니다. 이 때 나눠진 데이터 세트를 미니 배치라고 하며, 미니 배치를 이용해 경사하강법을 진행하는 것을 확률적 경사하강법(Stochastic Gradient Descent)이라고 합니다. 따라서 일반 경사하강법과 SGD 의 차이는 데이터 전체를 한 번에 사용하는지 나눠서 사용하는지의 차이일 뿐, 계산 과정의 차이는 없습니다. 또한 "확률적"이라고 하는 이유는 미니 배치를 나눌 때 데이터를 무작위로 섞어서 나누기 때문입니다.
+
+```python
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+```
+
+## 4.2 다양한 최적화 기법
+
+경사하강법과 SGD 의 단점은 학습률이 고정되어 있다는 것입니다. 따라서 변수의 위치에 상관없이 이동 비율이 항상 같기 때문에 계산이 비효율적일 수 있습니다. 따라서 더 효율적인 최적화를 위해 여러가지 방법들이 고안되었습니다. 그 중 기본적으로 많이 사용되는 방법은 모멘텀 + 스케쥴링이나 Adam 입니다.
+
+## 4.3 스케쥴링
+
+가변 학습률을 사용하지 않는 방법에 대해서는 학습률이 변하지 않습니다. 따라서 별도로 학습률이 어떻게 바뀌는지 규칙을 정해주는 것을 스케쥴링이라고 합니다. 예를 들어 학습 반복 30번마다 학습률을 0.1배씩 줄여주고 싶다면 `optim.lr_scheduler.StepLR`을 optimizer 아래 선언할 수 있습니다. 그리고 for 문 안에 `shceduler.step()`만 추가하면 자동으로 학습률을 변경해 줍니다.
+
+```python
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+
+for epoch in range(400):
+  running_loss = 0.0
+  for data in trainloader:
+    inputs, values = data
+    optimizer.zero_grad()
+    outputs = model(inputs)
+    loss = criterion(outputs, values)
+    loss.backward()
+    optimizer.step()
+  scheduler.step()
+```
+
+파이토치는 MultiplicativeLR, LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR 등 다양한 스케줄링을 제공합니다.
+
+## 4.4 MADGRAD
+
+MADGRAD 는 모멘텀과 가변식 방법을 병행하는 최신 최적화 방법으로 SGD 와 Adam 을 능가하는 것으로 페이스북 연구팀이 발표한 바 있습니다.
+
+# 5. 교차검증
+
+기본적인 모델의 학습과 평가 과정은 학습 데이터로 학습하고 평가 데이터로 성능을 확인합니다. 이 때 평가 데이터에서 가장 성능이 잘 나오는 모델을 고르게 됩니다. 학습 시 평가 데이터를 사용하지 않기 때문에 평가 방법에 문제가 되지 않는다고 생각할 수 있지만, 평가 데이터를 기준으로 모델을 튜닝한다면 모델이 평가 데이터에 과적합이 될 수 도 있습니다. 물론 빠르게 작업할 수 있으며, 어느 정도 성능은 충분히 가늠할 수 있기 때문에 많이 사용됩니다. 하지만 앞에서 언급한 단점을 보완하기 위해 검증 데이터를 사용합니다. 전체 데이터를 학습, 검증, 평가 데이터로 나누어 학습 데이터로 모델을 학습하고 검증 데이터로 모델을 평가하고 튜닝한 다음 평가 데이터로 최종 평가를 합니다.
+데이터를 나누는 방법은 매우 다양합니다. 그 중 k겹 교차 검증(k-Fold Cross-validation)은 학습 데이터 전체를 사용하면서 검증할 수 있는 방법으로 머신러닝 분야에서 매우 널리 쓰이는 검증 방법입니다. 학습 데이터를 k 개로 나누어 1개는 검증 데이터로 사용하고 나머지 k-1 개는 학습 데이터로 사용합니다. 따라서 k 번의 검증 과정이 필요하기 때문에 느린 것이 단점입니다. 그럼 이전에 진행했던 MLP 모델을 이용해 교차 검증을 진행해 보도록 하겠습니다.
+
+## 5.1 교차 검증을 통한 집값 예측 모델 평가
+
+### 모듈 임포트 하기
+
+`from skealrn.model_selection import KFold` 는 학습 데이터 세트를 k개의 부분 데이터 세트(폴드)로 나눈 후 k-1 개의 폴드는 학습 데이터로 사용하고, 나머지 1개는 검증 데이터로 사용할 수 있도록 전체 학습 데이터 세트에서 인덱스를 나눠주는 역할을 합니다.
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+import torch
+from torch import nn, optim
+from torch.utils.data import DataLoader, Dataset
+import torch.nn.functional as F
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+```
+
+### 데이터 프레임을 넘파이 배열로 만들기
+
+이전에 사용했던 스케일린된 집값 데이터를 read_csv 를 통해 불러옵니다. 이 때 index_col=[0]을 이용하여 csv 파일의 첫 번째 열에 있는 데이터의 인덱스를 배제하고 데이터프레임을 만듭니다.
+데이터프레임 df 에서 Price 를 제외한 나머지를 변수로 사용합니다. drop 의 axis=1 은 열을 의미하여 Price 를 열 기준으로 배제하겠다는 의미입니다.
+Price 를 타겟값 Y 로 사용합니다.
+
+```python
+df = pd.read_csv("/content/drive/MyDrive/pytorch/reg.csv", index_col=[0])
+X = df.drop("Price", axis=1).to_numpy()
+Y = df["Price"].to_numpy().reshape((-1,1))
+```
+
+### 텐서 데이터 만들기
+
+trainset 은 교차 검증을 위해 나누기 대문에 미리 DataLoader 를 정의하지 않습니다.
+
+```python
+class TensorData(Dataset):
+  def __init__(self, x_data, y_data):
+    self.x_data = torch.FloatTensor(x_data)
+    self.y_data = torch.FloatTensor(y_data)
+    self.len = self.y_data.shape[0]
+  
+  def __getitem__(self, index):
+    return self.x_data[index], self.y_data[index]
+  
+  def __len__(self):
+    return self.len
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.7)
+trainset = TensorData(X_train, Y_train)
+testset = TensorData(X_test, Y_test)
+testloader = DataLoader(testset, batch_size=32, shuffle=False)
+```
+
+### 모델 구축
+
+```python
+class Regressor(nn.Module):
+  def __init__(self):
+    super().__init__()
+    self.fc1 = nn.Linear(13, 50, bias=True)
+    self.fc2 = nn.Linear(50, 30, bias=True)
+    self.fc3 = nn.Linear(30, 1, bias=True)
+  
+  def forward(self, x):
+    x = self.fc1(x)
+    x = self.fc2(x)
+    x = self.fc3(x)
+    return x
+```
+
+### 손실 함수와 교차 검증 정의
+
+학습 데이터를 3개의 폴드로 나누어 3겹 교차 검증을 진행합니다.
+
+```python
+kfold = KFold(n_splits=3, shuffle=True)
+criterion = nn.MSELoss()
+```
+
+### 평가 함수 정의
+
+```python
+def evaluation(dataloader):
+
+  predictions = torch.tensor([], dtype=torch.float)
+  actual = torch.tensor([], dtype=torch.float)
+
+  with torch.no_grad():
+    model.eval()
+    for data in dataloader:
+      inputs, values = data
+      outputs = model(inputs)
+
+      predictions = torch.cat((predictions, outputs), 0)
+      actual = torch.cat((actual, values), 0)
+  
+  predictions = predictions.numpy()
+  actual = actual.numpy()
+  rmse = np.sqrt(mean_squared_error(predictions, actual))
+  model.train()
+
+  return rmse
+```
+
+### 교차 검증을 이용한 학습 및 평가
+
+`validation_loss = []` 검증 점수를 산출하기 위해 폴드 별 로스 저장 리스트를 만듭니다.
+`Kfold.split(trainset)` 을 이용하여 나눠진 학습 데이터의 인덱스를 불러옵니다.
+TensorData 로 정의된 데이터의 일부를 불러와 배치 데이터 형태로 활용할 수 있도록 `DataLoader` 와 `SubsetSampler` 를 함께 사용합니다.
+
+```python
+validation_loss = []
+for fold, (train_idx, val_idx) in enumerate(kfold.split(trainset)):
+
+  train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
+  val_subsampler = torch.utils.data.SubsetRandomSampler(val_idx)
+  trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=train_subsampler)
+  valloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=val_subsampler)
+
+  model = Regressor()
+  optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-7)
+
+  for epoch in range(400):
+    for data in trainloader:
+      inputs, values = data
+      optimizer.zero_grad()
+
+      outputs = model(inputs)
+      loss = criterion(outputs, values)
+      loss.backward()
+      optimizer.step()
+
+  train_rmse = evaluation(trainloader)
+  val_rmse = evaluation(valloader)
+  print("k-fold", fold, "Train Loss: %.4f, Validation Loss: %.4f" %(train_rmse, val_rmse))
+  validation_loss.append(val_rmse)
+```
+
+```
+Output:
+
+k-fold 0 Train Loss: 0.0899, Validation Loss: 0.1220
+k-fold 1 Train Loss: 0.1014, Validation Loss: 0.0994
+k-fold 2 Train Loss: 0.1031, Validation Loss: 0.1008
+```
+
+### 검증 점수 산출
+
+```python
+validation_loss = np.array(validation_loss)
+mean = np.mean(validation_loss)
+std = np.std(validation_loss)
+print("Validation Score: %.4f ± %.4f" %(mean, std))
+```
+
+```
+Output: Validation Score: 0.1074 ± 0.0103
+```
+
+### 모델 평가
+
+```python
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, shuffle=True)
+train_rmse = evaluation(trainloader)
+test_rmse = evaluation(testloader)
+print("Train RMSE: %.4f" %train_rmse)
+print("Test RMSE: %.4f" %test_rmse)
+```
+
+```
+Output: 
+
+Train RMSE: 0.1024
+Test RMSE: 0.1345
+```
+
+# 6. 모델 구조 및 가중치 확인
+
+모델 튜닝에 필요한 모델 구조 및 가중치를 확인하는 방법에 대해서 알아봅니다.
+
+## 6.1 모델 구조
+
+`torchsummary` 는 구조와 모델 변수를 간략히 알려주는 라이브러리입니다. `pip install torchsummary`을 통해 별도의 설치가 필요합니다.
+
+```python
+import torch
+from torch import nn
+import torch.nn.functional as F
+from torchsummary import summary
+```
+
+모델을 보면 변수가 있는 곳은 `nn.Linear` 가 있는 부분입니다. 입력층에서 첫 번째 은닉층으로 넘어가는 부분의 가중치는 13x50=650 개, 편향이 50개 이므로 총 700개의 변수가 존재합니다. 첫 번째 은닉층에서 두 번째 은닉층 사이에는 가중치가 50x30=1500개, 편향이 30개이므로 변수가 총 1530개이고 마지막 출력층으로 가는 길목에는 가중치 30개, 편향 1개를 포함해 총 31개가 존재합니다.
+
+```python
+class Regressor(nn.Module):
+  def __init__(self):
+    super().__init__()
+    self.fc1 = nn.Linear(13, 50)
+    self.fc2 = nn.Linear(50, 30)
+    self.fc3 = nn.Linear(30, 1)
+    self.dropout = nn.Dropout(0.5)
+  
+  def forward(self, x):
+    x = F.relu(self.fc1(x))
+    x = self.dropout(F.relu(self .fc2(x)))
+    x = F.relu(self.fc3(x))
+    return x
+```
+
+모델을 출력하면 `__ini__` 부분에서 정의된 구조를 확인할 수 있습니다.
+
+```python
+model = Regressor()
+print(model)
+```
+
+```
+Output:
+
+Regressor(
+  (fc1): Linear(in_features=13, out_features=50, bias=True)
+  (fc2): Linear(in_features=50, out_features=30, bias=True)
+  (fc3): Linear(in_features=30, out_features=1, bias=True)
+  (dropout): Dropout(p=0.5, inplace=False)
+)
+```
+
+## 6.2 모델 변수
+
+`model.parameters()` 를 통해 정의된 순서대로 변수를 얻을 수 있습니다.
+
+```python
+for parameter in model.parameters():
+  print(parameter.size())
+```
+
+```
+Output:
+
+torch.Size([50, 13])
+torch.Size([50])
+torch.Size([30, 50])
+torch.Size([30])
+torch.Size([1, 30])
+torch.Size([1])
+```
+
+변수명을 알고 있다면 직접 접근하여 변수를 불러올 수 있습니다. 예를 들어 model 에 fc1 의 가중치를 불러 오고 있다면 model.fc1.weight 이라고 작성하고, 편향은 model.fc1.bias 라고 작성합니다.
+
+```python
+print(model.fc1.weight.size(), model.fc1.bias.size())
+```
+
+```
+Outupt: torch.Size([50, 13]) torch.Size([50])
+```
+
+변수명을 모를 경우에는 `model.named_parameters()`을 통해 변수명과 변수를 동시에 불러올 수 있습니다.
+
+```python
+for name, param in model.named_parameters():
+  print(name, param.size())
+```
+
+```
+Output:
+
+fc1.weight torch.Size([50, 13])
+fc1.bias torch.Size([50])
+fc2.weight torch.Size([30, 50])
+fc2.bias torch.Size([30])
+fc3.weight torch.Size([1, 30])
+fc3.bias torch.Size([1])
+```
+
+`torchsummary`에서 제공하는 summary 에 model 을 넣고 임의의 입력 데이터 사이즈를 넣으면 층마다 출력값의 크기와 변수에 대한 정보를 테이블로 만들어줍니다.
+
+```python
+summary(model, (10, 13))
+```
+
+```
+Output: 
+
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Linear-1               [-1, 10, 50]             700
+            Linear-2               [-1, 10, 30]           1,530
+           Dropout-3               [-1, 10, 30]               0
+            Linear-4                [-1, 10, 1]              31
+================================================================
+Total params: 2,261
+Trainable params: 2,261
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 0.00
+Forward/backward pass size (MB): 0.01
+Params size (MB): 0.01
+Estimated Total Size (MB): 0.02
+----------------------------------------------------------------
+```
+
+# 마치며
+
+파이토치를 이용한 인공 신경망인 MLP 에 대해서 알아보고, 학습과 평가 시에 사용하는 기초적인 여러 개념들과 기법들에 대해서 알아보았습니다. 추후에 여러가지 경사하강법들과 손실 함수에 대해서 더 알아보고자 합니다. 긴 글 읽어주셔서 감사드리며, 잘못된 내용이나 오타 혹은 궁금하신 사항이 있으시면 댓글 달아주시기 바랍니다.
