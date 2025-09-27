@@ -11,6 +11,7 @@ use_math: true
 toc: true
 toc_sticky: true
 toc_label: ""
+mermaid: true
 ---
 
 이번엔 파이토치를 이용해 기본적인 인공 신경망에 대해서 알아보도록 하겠습니다. 그와 함께 딥러닝의 여러 기초적인 개념도 한 번 살펴보도록 하겠습니다.
@@ -309,7 +310,53 @@ Test RMSE: 0.1078935584512692
 
 기본적으로 인공 신경망은 선형식 계산의 연속입니다.(즉, 선형 결합 형태의 함수가 합성된 형태). 이를 통해 연산을 쉽게 할 수 있으며 미분이 가능하고 미분ㅇ르 쉽게 풀 수 있게 됩니다. 이 부분에서 "과연 노드 간의 관계가 항상 선형적일까?"라는 합리적인 의심을 해볼 수 있습니다. 사회, 경제, 자연 현상들을 보면 비선형적인 관계가 많다는 것을 알 수 있습니다. 따라서 비선형적인 층 사이의 관계를 표현할 수 있는 활성화 함수(Activation function)를 사용합니다. 활성화 함수 $a(x)$는 합성 함수의 일환으로 이전 노드의 값과 가중치가 계산된 값을 활성화 함수에 넣어 계산한 뒤 다음 노드로 보내게 됩니다.
 
-차후 수정 필요
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/activation_function_example.png" width="60%" height="50%"/>
+</div>
+
+위 그림과 같이 이전 층에 있는 노드값은 가중치와 각각 곱해져 더하는 선형 결합입니다. 활성화 함수를 적용하지 않으면 계산된 값이 그대로 다음 층으로 들어갑니다. 만약 활성화 함수를 적용하다면 이전 층과 다음 층 사이에 있는 활성화 함수 $a(x)$ 를 거치게 됩니다. 만약 함수 $a(x)=max(x,0)$로 정의된 `ReLU` 함수를 사용했다면 음수는 모두 0으로 나오고, 양수는 계산 그대로 넘겨주게 됩니다.
+
+## 2.2 선형 함수
+
+선형 함수는 $a(x)=mx+n$ 형태인 활성화 함수입니다. 만약 m=1, n=0 이면 항등 함수로써 넘어온 값을 그대로 받는다는 의미입니다. 활성화 함수의 역할은 1차적으로 비선형 관계를 만들어 주기 때문에 거의 사용하지 않습니다.
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/linear_function.png" width="50%" height="40%"/>
+</div>
+
+## 2.3 시그모이드(sigmoid) 함수 - torch.sigmoid() / nn.Sigmoid()
+
+시그모이드 함수 $\sigma (x) = \frac{1}{1+e^{-x}}$ 는 모든 입력값에 대해 0과 1 사이로 변환하는 역할을 하며 일반적으로 $\sigma$(sigma)로 표기합니다. 또한 0.5 를 기준으로 0.5 이하면 0, 초과면 1로 변환하여 두 가지 클래스를 분류하는 이진분류(binary classification) 문제에도 활용할 수 있습니다.
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/sigmoid.png" width="50%" height="40%"/>
+</div>
+
+## 2.4 tanh 함수 - torch.tanh() / nn.Tanh()
+
+시그모이드 함수와 형태는 유사하지만 -1과 1 사이의 값을 취할 수 있어 0과 음수값을 가질 수 있습니다. 또한 0 부근에서 시그모이드 보다 더 가파른 기울기를 갖는다는 것이 차이점입니다.
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/tanh.png" width="50%" height="40%"/>
+</div>
+
+## 2.5 ReLU 함수 - torch.nn.functional.relu() / nn.ReLU()
+
+두개의 직선을 이어 만든 것으로 비선형 함수지만 선형과 매우 유사한 성질을 가지고 있습니다. 따라서 계산이 쉽고 미분도 쉽게 풀 수 있습니다. 또한 가장 중요한 점은 모델 최적화에 유용한 선형적 성질들을 보존하고 있어서 최적화를 쉽게 할 수 있게 합니다. 따라서 가장 널리 사용되며 성능이 매우 좋은 것으로 알려져 있습니다.
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/neural_network/relu.png" width="50%" height="40%"/>
+</div>
+
+## 2.6 softmax 함수 - torch.nn.functional.softmax() / nn.Softmax()
+
+벡터 $\mathbb{x} = (x_1, x_2, \cdots, x_n)$에 대하여 모든 성분이 항상 양수이며, 그 합이 1이 되도록 변환합니다. 따라서 음수값이 오더라도 항상 양수가 나오도록 지수 함수를 이용한 함수입니다. 베겉 형태로 예측값이 나오는 다중 분류문제에서 자주 사용됩니다.
+
+$$ \sigma(\mathbb{x}) = \frac{e^{\mathbb{x}}}{\sum_{j=1}^{n} e^{x_j}} $$
+
+## 2.7 기타 활성화 함수
+
+파이토치에서는 nn.ELU(), nn.LeakyReLU(), nn.LogSigmoid(), nn.SELU() 와 같은 매우 다양한 함수를 제공하고 있으며, 필요에 따라 직접 활성화 함수를 만들기도 합니다.
 
 # 3. 손실 함수
 
