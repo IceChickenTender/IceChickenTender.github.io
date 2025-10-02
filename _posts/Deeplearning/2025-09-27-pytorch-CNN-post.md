@@ -2,10 +2,10 @@
 title: "[Deeplearning] 파이토치로 알아보는 합성곱 신경망"
 categories:
   - Deeplearning
-  - pytorch
+  - Pytorch
 tags:
   - Deeplearning
-  - pytorch
+  - Pytorch
   
 use_math: true
 toc: true
