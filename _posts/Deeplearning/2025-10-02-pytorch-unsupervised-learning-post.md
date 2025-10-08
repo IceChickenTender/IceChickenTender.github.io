@@ -365,5 +365,134 @@ class Flatten(torch.nn.Module):
     return x.view(batch_size, -1)
 ```
 
+### 벡터를 사각형 피쳐맵으로 변환하기
 
+`Deflatten` 클래스는 잠재 변수 h(혹은 hidden_layer) 에서 출력층으로 갈 때 일렬인 벡터를 CNN 에 맞게 피쳐맵으로 바꿔주는 클래스입니다.
+
+`feature_size`는 잠재 변수 h 를 이용해 구합니다. 잠재 변수 h 의 크기는 (배치사이즈, 채널 수\*이미지 너비\*이미지 높이)입니다. 따라서 벡터 사이즈는 채널 수\*이미지 너비*이미지 높이이고 너비와 높이가 같다면 채널 수\*이미지 너비\*\*2가 됩니다. 그래서 이미지 한 변의 길이는 (벡터 사이즈//채널 수)\*\*.5 가 됩니다.
+
+잠재 변수를 이용해 구한 `feature_size` 를 이용해 피쳐맵의 크기를 (배치 사이즈, 채널 수, 이미지 너비, 이미지 높이) = (s[0], self.k, feature_size, feature_size) 로 변환합니다.
+
+```python
+class Deflatten(nn.Module):
+  def __init__(self, k):
+    super(Deflatten, self).__init__()
+    self.k = k
+
+  def forward(self, x):
+    s = x.size()
+    feature_size = int((s[1]//self.k)**5)
+    return x.view(s[0], self.k, feature_size, feature_size)
+```
+
+### 모델 구축하기
+
+모델의 decoder 를 보면 nn.Conv2d 대신 nn.ConvTranspose2d 를 사용합니다. 그 이유는 크기가 작은 입력값을 크기가 큰 입력값으로 만들기 위함입니다. nn.ConvTranspose2d 는 입력 성분(Conv의 결과)을 출력 성분(Conv의 입력)으로 미분하여 그 값을 입력 벡터와 곱해 출력 벡터를 산출하고 그 결과 벡터를 행렬 형태로 변환하는 연산입니다. 이렇게 말하면 잘 이해가 되질 않습니다. 
+
+쉽게 설명하자면 Conv2d 는 큰 이미지를 작은 특징 맵으로 요약하는 과정입니다. 마치 넓은 사진에서 돋보기(커널)를 움직이며 중요한 특징(윤곽선, 질감 등)만 찾아 작은 스케치북에 옮겨 그리는 것과 같으며, 이러한 과정을 진행하면 이미지는 작은 피쳐맵으로 압축되게 됩니다. 하지만 현재 우리가 알아보고 있는 합성곱 오토인코더의 디코더는 인코더에서 Conv2d 를 통해 압축된 피쳐맵을 다시 원본 이미지로 되돌려야 합니다. 그래서 Conv2d 반대로 동작하는 ConvTranspose2d 를 사용하는 것입니다. ConvTranspose2d 는 작은 특징 맵(요약본)을 가지고 원래의 큰 이미지로 확장/복원 할 수 있습니다. 업 샘플링(Upsampling) 컨볼루션이라고도 불립니다. ConvTranspose2d 를 이용해 도출되는 확장/복원된 피쳐매의 크기는 다음 식에 의해 크기를 산출할 수 있습니다.
+
+(출력값의 크기) = (입력값의 크기-1)x(보폭)-2*(패딩)+(필터의 크기) + (출력값 패딩)
+{: .text-center}
+
+
+```python
+class Autoencoder(nn.Module):
+  def __init__(self):
+    super(Autoencoder, self).__init__()
+    k = 16
+    self.encoder = nn.Sequential(
+        nn.Conv2d(1, k, 3, stride=2), nn.ReLU(),
+        nn.Conv2d(k, 2*k, 3, stride=2), nn.ReLU(),
+        nn.Conv2d(2*k, 4*k, 3, stride=1), nn.ReLU(),
+        Flatten(), nn.Linear(1024, 10), nn.ReLU())
+
+    self.decoder = nn.Sequential(
+        nn.Linear(10, 1024), nn.ReLU(),
+        Deflatten(4*k),
+        nn.ConvTranspose2d(4*k, 2*k, 3, stride=1), nn.ReLU(),
+        nn.ConvTranspose2d(2*k, k, 3, stride=2), nn.ReLU(),
+        nn.ConvTranspose2d(k, 1, 3, stride=2, output_padding=1), nn.Sigmoid())
+
+  def forward(self, x):
+    encoded = self.encoder(x)
+    decoded = self.decoder(encoded)
+    return decoded
+```
+
+### 모델, 손실 함수, 최적화 기법 정의하기
+
+```python
+model = Autoencoder().to(device)
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+```
+
+### 학습하기
+
+```python
+for epoch in range(51):
+  running_loss = 0.0
+  for data in trainloader:
+    inputs = data[0].to(device)
+    optimizer.zero_grad()
+    outputs = model(inputs)
+    loss = criterion(outputs, inputs)
+    loss.backward()
+    optimizer.step()
+    running_loss += loss.item()
+
+  cost = running_loss /len(trainloader)
+  if epoch % 10 == 0:
+    print("[%d] loss: %.3f"%(epoch+1, cost))
+```
+
+### 모델을 이용한 이미지 출력하기
+
+```python
+
+test_dataset = torchvision.datasets.MNIST(root="./data/", download=True, train=False, transform=transforms.ToTensor())
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=10, shuffle=True) # 10개의 이미지를 시각화합니다.
+
+model.eval()
+
+dataiter = iter(test_loader)
+images, labels = next(dataiter)
+images = images.to(device)
+
+with torch.no_grad():
+    outputs = model(images)
+
+original_images = images.cpu().numpy()
+reconstructed_images = outputs.cpu().numpy()
+
+n = 10  # 표시할 이미지 개수
+plt.figure(figsize=(20, 4))
+print("Top row: Original Images, Bottom row: Reconstructed Images")
+
+for i in range(n):
+    # 원본 이미지 표시
+    ax = plt.subplot(2, n, i + 1)
+    plt.imshow(np.squeeze(original_images[i]), cmap='gray')
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    if i == n // 2:
+        ax.set_title('Original Images')
+
+    # 복원된 이미지 표시
+    ax = plt.subplot(2, n, i + 1 + n)
+    plt.imshow(np.squeeze(reconstructed_images[i]), cmap='gray')
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    if i == n // 2:
+        ax.set_title('Reconstructed Images')
+plt.show()
+```
+
+<div align="center">
+  <img src="/assets/images/deeplearning/pytorch/unsupervised_learning/conv_autoencoder_result_image.png" width="70%" height="60%"/>
+</div>
+
+# 5. 생성적 적대 신경망(GAN)
+
+생성적 적대 신경망(Generative adverarial network, GAN)은 아이디어 자체만으로 매우 가치있는 모델로 평가 받고 있습니다. 실제로 얼굴 변환, 생성, 음성 변조, 그림 스타일 변환, 사진 복원 등 다양한 기술로 응용되고 있습니다. 기본적으로 생성적 적대 신경망은 진짜 같은 가짜 데이터를 만들어 내는 기술입니다.
 
