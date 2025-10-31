@@ -33,7 +33,11 @@ from matplotlib import pyplot as plt
 ```
 
 ```python
+# 0, 1, 2, 3, 4 를 float32 텐서로 만들고 (5,) -> (5,1) 형태로 차원을 하나 늘림
+# 선형회귀에서 특성행렬 X를 (N, D) 꼴로 사용하기 위해 unsqueeze(1) 사용
 x = torch.FloatTensor(range(5)).unsqueeze(1)
+
+# 타깃 y = 2*x + ε (ε ~ U[0,1))  : 실제 관계(기울기=2)에 약간의 잡음을 더해 학습 문제를 구성
 y = 2*x + torch.rand(5,1)
 ```
 
@@ -46,20 +50,28 @@ y = 2*x + torch.rand(5,1)
 class LinearRegressor(nn.Module):
   def __init__(self):
     super().__init__()
+
+    # 입력 벡터의 크기가 1이고, 출력 벡터의 크기가 1인 선형 레이어 정의 
     self.fc = nn.Linear(1,1,bias=True)
 
-  
   def forward(self, x):
     y = self.fc(x)
     return y
 ```
 
-클래스가 완성되었다면 model 을 선언합니다. MSE 를 손실 함수로 사용합니다. 최적화 바업ㅂ에 모델 파라미터를 넣어 줄 때는 `model.parameters()` 라고 입력합니다.
+클래스가 완성되었다면 model 을 선언합니다. MSE 를 손실 함수로 사용합니다. 최적화 방법에 모델 파라미터를 넣어 줄 때는 `model.parameters()` 라고 입력합니다.
 
 ```python
+# 모델 정의
 model = LinearRegressor()
+
+# 학습률 설정
 learning_rate = 1e-3
+
+# 손실 함수 설정
 criterion = nn.MSELoss()
+
+# 최적화 함수 설정
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 ```
 
@@ -67,15 +79,19 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 ```python
 
+# 손실 함수값을 출력하기 위해 손실값을 저장하는 리스트
 loss_stack = []
 
 for epoch in range(1001):
 
+  # 이전 step 에서 누적된 gradient 를 0으로 초기화
   optimizer.zero_grad()
 
+  # 정의한 모델로 예측값과 손실값을 구한다
   y_hat = model(x)
   loss = criterion(y_hat, y)
 
+  # 역전파 학습 진행
   loss.backward()
   optimizer.step()
   loss_stack.append(loss.item())
@@ -120,15 +136,15 @@ $$
 
 
 ```python
-import pandas as pd 
-import numpy as np 
-from sklearn.model_selection import train_test_split
+import pandas as pd # 데이터프레임 형태를 다룰 수 있는 라이브러리
+import numpy as np
+from sklearn.model_selection import train_test_split # 전체 데이터를 학습 데이터와 평가 데이터로 나눈다
 import torch
-from torch import nn, optim
-from torch.utils.data import DataLoader, Dataset
-import torch.nn.functional as F
-from sklearn.metrics import mean_squared_error
-import matplotlib.pyplot as plt
+from torch import nn, optim # torch 내의 세부적인 기능을 불러온다.
+from torch.utils.data import DataLoader, Dataset # 데이터를 모델에 사용할 수 있도록 정리해 주는 라이브러리
+import torch.nn.functional as F # torch 내의 세부적인 기능을 불러온다.
+from sklearn.metrics import mean_squared_error # Regression 문제의 평가를 위해 MSE(Mean Squared Error) 를 불러온다
+import matplotlib.pyplot as plt # 시각화 도구
 ```
 
 ### 데이터 세트 만들기
@@ -136,6 +152,7 @@ import matplotlib.pyplot as plt
 스케일링된 집값 데이터를 `read_csv`를 통해 불러옵니다. 이 때 `index_col=[0]`을 이용하여 csv 파일 첫 번째 열에 있는 데이터의 인덱스를 배제하고 데이터프레임을 만듭니다. 데이터 내의 변수의 개수가 13개이고, 인스턴스의 개수는 506개입니다.
 
 ```python
+# 주식 데이터가 있는 csv 파일을 pandas 를 이용해 읽어온다.
 df = pd.read_csv("/content/drive/MyDrive/pytorch/reg.csv", index_col=[0])
 ```
 
@@ -144,13 +161,16 @@ df = pd.read_csv("/content/drive/MyDrive/pytorch/reg.csv", index_col=[0])
 데이터프레임 df 에서 Price 를 제외한 나머지를 변수로 사용합니다. drop 의 axis=1 은 열을 의미하여 Price 를 열 기준으로 배제하겠다는 의미입니다. 그리고 Price 를 타겟값 Y 로 사용합니다.
 
 ```python
-X = df.drop("Price", axis=1).to_numpy()
-Y = df["Price"].to_numpy().reshape((-1,1))
+# 데이터를 넘파이 배열로 만들기
+X = df.drop("Price", axis=1).to_numpy() # 데이터프레임에서 타겟값(Price)를 제외하고 넘파이 배열로 만들기
+Y = df["Price"].to_numpy().reshape((-1,1)) # 데이터프레임 형태의 타겟값을 넘파이 배열로 만들기
 ```
 
 전체 데이터를 50:50으로 학습 데이터와 평가 데이터로 나눕니다.
 
 ```python
+# 전체 데이터를 학습 데이터와 평가 데이터로 나눈다.
+# 기준으로 잡은 논문이 전체 데이터를 50%, 50%로 나눴기 때문에 test size를 0.5로 설정한다.
 X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.5)
 ```
 
@@ -159,6 +179,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.5)
 trainloader 와 testloader 를 만듭니다. 일반적으로 학습 데이터는 shuffle=True 로 주고 평가는 shuffle=False 로 설정합니다.
 
 ```python
+# 데이터를 텐서 형태로 변경 시켜주는 클래스
 class TensorData(Dataset):
   def __init__(self, x_data, y_data):
     self.x_data = torch.FloatTensor(x_data)
@@ -168,10 +189,11 @@ class TensorData(Dataset):
   def __getitem__(self, index):
     return self.x_data[index], self.y_data[index]
 
-    
+
   def __len__(self):
     return self.len
 
+# 학습 데이터, 시험 데이터 배치 형태로 구축하기
 trainsets = TensorData(X_train, Y_train)
 trainloader = torch.utils.data.DataLoader(trainsets, batch_size=32, shuffle=True)
 testsets = TensorData(X_test, Y_test)
@@ -194,15 +216,15 @@ Regressor 는 입력층 1개, 은닉층 2개, 출력층 1개를 가진 모델입
 class Regressor(nn.Module):
   def __init__(self):
     super().__init__()
-    self.fc1 = nn.Linear(13, 50, bias=True)
-    self.fc2 = nn.Linear(50, 30, bias=True)
-    self.fc3 = nn.Linear(30, 1, bias=True)
+    self.fc1 = nn.Linear(13, 50, bias=True) # 입력층(13) -> 은닉층1(50)으로 가는 연산
+    self.fc2 = nn.Linear(50, 30, bias=True) # 은닉층1(50) -> 은닉층2(30)으로 가는 연산
+    self.fc3 = nn.Linear(30, 1, bias=True) # 은닉층2(30) -> 출력층(1)으로 가는 연산
     self.dropout = nn.Dropout(0.5)
 
-  def forward(self, x):
-    x = F.relu(self.fc1(x))
-    x = self.dropout(F.relu(self.fc2(x)))
-    x = F.relu(self.fc3(x))
+  def forward(self, x): # 모델 연산의 순서를 정의
+    x = F.relu(self.fc1(x)) # Linear 계산 후 활성화 함수 ReLU를 적용한다.
+    x = self.dropout(F.relu(self.fc2(x))) # 은닉층2 에서 드랍아웃을 적용한다
+    x = F.relu(self.fc3(x)) # Linear 계산 후 활성화 함수 ReLU를 적용한다.
     return x
 ```
 
@@ -211,28 +233,26 @@ class Regressor(nn.Module):
 Adam 의 최적화 방법을 정의합니다. `weight_decay` 는 $L_2$ 정규화에서의 penalty 값을 의미하며 값이 클수록 제약조건이 강함을 의미합니다.
 
 ```python
-model = Regressor()
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-7)
+model = Regressor() # 모델 정의
+criterion = nn.MSELoss() # 손실 함수 정의
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-7) # 최적화 함수 정의
 ```
 
 ```python
-loss_ = [] # 그래프를 그리기 위한 loss 저장용 리스트
-n = len(trainloader) # 매 에폭 손실 함수 값의 평균읅 구하기 위한 배치 반복 수
+loss_ = [] # 손실값을 그래프로 그리기 위해 손실값을 담는 리스트
+n = len(trainloader) # 배치 사이즈
+for epoch in range(400):
+  running_loss = 0.0
+  for data in trainloader: # 무작위로 섞인 32개 데이터가 있는 배치가 하나씩 들어온다.
+    inputs, values = data
+    optimizer.zero_grad() # 최적화 초기화
 
-for epoch in range(400): # 400번 데이터를 반복 학습
-  running_loss = 0.0 # 매 에폭 손실 함수 값의 평균을 구하기 위해 초깃값을 0으로 초기화
-  for data in trainloader:
-    inputs, values = data # 입력값과 타깃값을 받아온다
-    optimizer.zero_grad() # 그래디언트를 초기화한다
-    
-    outputs = model(inputs) # model 에 입력값을 넣어 예측갑을 산출
-    loss = criterion(outputs, values)
-    loss.backward()
-    optimizer.step()
-    running_loss += loss.item() # 매 에폭 손실 함수값의 평균을 구하기 위해 running_loss 에 배치마다 로스를 더한다.
-
-  loss_.append(running_loss/n) # 저장용 리스트에 매 에폭 결과를 저장
+    outputs = model(inputs) # 모델에 입력값 대입 후 예측값 산출
+    loss = criterion(outputs, values) # 손실 함수 계산
+    loss.backward() # 손실 함수 기준으로 역전파 설정
+    optimizer.step() # 역전파를 진행하고 가중치 업데이트
+    running_loss += loss.item() # epoch 마다 평균 loss를 계산하기 위해 배치 loss 를 더한다.
+  loss_.append(running_loss/n)
 ```
 
 ### 손실 함수값 그리기
@@ -255,43 +275,35 @@ plt.show()
 최종적인 모델 평가는 RMSE(Root Mean Square Error)를 사용합니다.
 
 ```python
+# 평가 데이터와 학습한 모델로 평가 진행
 def evaluation(dataloader):
+  predictions = torch.tensor([], dtype=torch.float) # 예측값을 저장할 빈 텐서 정의
+  actual = torch.tensor([], dtype=torch.float) # 실제값을 저장하는 빈 텐서 정의
 
-  # 예측값과 그에 대응하는 실제값을 저장하기 위해 빈 텐서를 만듭니다
-  predictions = torch.tensor([], dtype=torch.float)
-  actual = torch.tensor([], dtype=torch.float)
-
-  
-  with torch.no_grad(): # requires_grad 를 비활성화합니다.
-    model.eval() # 모델 내에서 학습 시에만 동작하는 장치들을 비활성화하기 위해 model.eval()을 적용한다
-
-    # 배치 단위로 데이터를 받아 예측값을 산출하고 실제 값과 누적시킨다
-    # 
+  with torch.no_grad():
+    model.eval() # 평가를 진행할 때에는 모델이 학습하지 않도록 무조건 eval() 을 사용해야 한다.
     for data in dataloader:
       inputs, values = data
       outputs = model(inputs)
-
+      
       # torch.cat 에서 0은 0번째 차원을 기준으로 누적한다는 의미이다
       # 0번째 차원은 10x2, 10x2 를 누적하면 20x2로 누적됨
       # 1번째 차원은 10x2, 10x2 를 누적하면 10x4로 누적됨
       predictions = torch.cat((predictions, outputs), 0)
       actual = torch.cat((actual, values), 0)
-  
-  # 텐서 데이터를 넘파이로 변환
-  predictions = predictions.numpy()
-  actual = actual.numpy()
 
-  # MSE 를 계산한 후 루트를 씌어 RMSE 를 계산한다.
-  rmse = np.sqrt(mean_squared_error(predictions, actual))
-  
+  predictions = predictions.numpy() # 넘파이 배열로 변경
+  actual = actual.numpy() # 넘파이 배열로 변경
+  rmse = np.sqrt(mean_squared_error(predictions, actual)) # sklearn 을 이용하여 RMSE 계산
+
   return rmse
 ```
 
-결과를 보면 학습 결과와 테스트 결과가 차이가 큽니다. 따라서 학습 데이터에 과적합이 되어 있다고 판단할 수 있습니다. 하지만 데이터를 무작위로 나누고 모데르이 초깃값도 `random initial parameter` 를 사용했기 때문에 학습을 할 때마다 결과가 다르게 나올 수 있습니다. 따라서 교차 검증이나 여러 번의 실험을 통해 결과의 경향성을 봐야합니다.
+결과를 보면 학습 결과와 테스트 결과가 차이가 큽니다. 따라서 학습 데이터에 과적합이 되어 있다고 판단할 수 있습니다. 하지만 데이터를 무작위로 나누고 모델의 초깃값도 `random initial parameter` 를 사용했기 때문에 학습을 할 때마다 결과가 다르게 나올 수 있습니다. 따라서 교차 검증이나 여러 번의 실험을 통해 결과의 경향성을 봐야합니다.
 
 ```python
-train_rmse = evaluation(trainloader)
-test_rmse = evaluation(testloader)
+train_rmse = evaluation(trainloader) # 학습 데이터의 RMSE
+test_rmse = evaluation(testloader) # 시험 데이터의 RMSE
 print("Train RMSE:", train_rmse)
 print("Test RMSE:", test_rmse)
 ```
@@ -308,7 +320,7 @@ Test RMSE: 0.1078935584512692
 
 ## 2.1 활성화 함수가 필요한 이유
 
-기본적으로 인공 신경망은 선형식 계산의 연속입니다.(즉, 선형 결합 형태의 함수가 합성된 형태). 이를 통해 연산을 쉽게 할 수 있으며 미분이 가능하고 미분ㅇ르 쉽게 풀 수 있게 됩니다. 이 부분에서 "과연 노드 간의 관계가 항상 선형적일까?"라는 합리적인 의심을 해볼 수 있습니다. 사회, 경제, 자연 현상들을 보면 비선형적인 관계가 많다는 것을 알 수 있습니다. 따라서 비선형적인 층 사이의 관계를 표현할 수 있는 활성화 함수(Activation function)를 사용합니다. 활성화 함수 $a(x)$는 합성 함수의 일환으로 이전 노드의 값과 가중치가 계산된 값을 활성화 함수에 넣어 계산한 뒤 다음 노드로 보내게 됩니다.
+기본적으로 인공 신경망은 선형식 계산의 연속입니다.(즉, 선형 결합 형태의 함수가 합성된 형태). 이를 통해 연산을 쉽게 할 수 있으며 미분이 가능하고 미분을 쉽게 풀 수 있게 됩니다. 이 부분에서 "과연 노드 간의 관계가 항상 선형적일까?"라는 합리적인 의심을 해볼 수 있습니다. 사회, 경제, 자연 현상들을 보면 비선형적인 관계가 많다는 것을 알 수 있습니다. 따라서 비선형적인 층 사이의 관계를 표현할 수 있는 활성화 함수(Activation function)를 사용합니다. 활성화 함수 $a(x)$는 합성 함수의 일환으로 이전 노드의 값과 가중치가 계산된 값을 활성화 함수에 넣어 계산한 뒤 다음 노드로 보내게 됩니다.
 
 <div align="center">
   <img src="/assets/images/deeplearning/pytorch/neural_network/activation_function_example.png" width="60%" height="50%"/>
@@ -388,7 +400,7 @@ $$
 
 # 4. 최적화 기법
 
-인공 신경망은 예측한 값과 타깃값을 정량적으로 비교할 수 있는 손실 함수를 통해 모델을 평가할 수 있습니다. 따라서 일반적으로 손실 함수값이 작다는 의미는 예측값과 타깃값의 차이가 작다라는 의미이므로 손실 함수값이 작게 나오게 하는 모델의 변수를 구하는 것이 최적화의 목적입니다. 그림과 같과 같이 손실 함수가 그려져 있고 현재 모델의 변수가 $w_o$ 라고 한다면 손실 함수값이 가장 작게 나오게 하는 변수 $w^\*$ 를 찾는게 목적이 되는 것입니다. 직관적으로 경사가 떨어지는 방향으로 간다면 우리가 원하는 이상적인 값을 얻을 수 있습니다. 이를 경사하강법(Gradient Descent)이라고 합니다.
+인공 신경망은 예측한 값과 타깃값을 정량적으로 비교할 수 있는 손실 함수를 통해 모델을 평가할 수 있습니다. 따라서 일반적으로 손실 함수값이 작다는 의미는 예측값과 타깃값의 차이가 작다라는 의미이므로 손실 함수값이 작게 나오게 하는 모델의 변수를 구하는 것이 최적화의 목적입니다. 그림과 같이 손실 함수가 그려져 있고 현재 모델의 변수가 $w_o$ 라고 한다면 손실 함수값이 가장 작게 나오게 하는 변수 $w^\*$ 를 찾는게 목적이 되는 것입니다. 직관적으로 경사가 떨어지는 방향으로 간다면 우리가 원하는 이상적인 값을 얻을 수 있습니다. 이를 경사하강법(Gradient Descent)이라고 합니다.
 
 <div align="center">
   <img src="/assets/images/deeplearning/pytorch/neural_network/gradient_descent_graph.png" width="50%" height="40%"/>
@@ -452,21 +464,29 @@ MADGRAD 는 모멘텀과 가변식 방법을 병행하는 최신 최적화 방�
 `from skealrn.model_selection import KFold` 는 학습 데이터 세트를 k개의 부분 데이터 세트(폴드)로 나눈 후 k-1 개의 폴드는 학습 데이터로 사용하고, 나머지 1개는 검증 데이터로 사용할 수 있도록 전체 학습 데이터 세트에서 인덱스를 나눠주는 역할을 합니다.
 
 ```python
-import pandas as pd
+import pandas as pd # 데이터프레임 형태를 다룰 수 있는 라이브러리
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split # 전체 데이터를 학습 데이터와 평가 데이터로 나눈다.
+
+# ANN
 import torch
-from torch import nn, optim
-from torch.utils.data import DataLoader, Dataset
-import torch.nn.functional as F
+from torch import nn, optim # torch 내의 세부적인 기능을 불러온다. (신경망 기술, 손실함수, 최적화 방법 등)
+from torch.utils.data import DataLoader, Dataset # 데이터를 모델에 사용할 수 있도록 정리해 주는 라이브러리
+import torch.nn.functional as F # torch 내의 세부적인 기능을 불러온다. (신경망 기술 등)
+
+# Cross Validation
 from sklearn.model_selection import KFold
-from sklearn.metrics import mean_squared_error
-import matplotlib.pyplot as plt
+
+# Loss
+from sklearn.metrics import mean_squared_error # Regression 문제의 평가를 위해 MSE(Mean Squared Error)를 불러온다.
+
+# Plot
+import matplotlib.pyplot as plt # 시각화 도구
 ```
 
 ### 데이터 프레임을 넘파이 배열로 만들기
 
-이전에 사용했던 스케일린된 집값 데이터를 read_csv 를 통해 불러옵니다. 이 때 index_col=[0]을 이용하여 csv 파일의 첫 번째 열에 있는 데이터의 인덱스를 배제하고 데이터프레임을 만듭니다.
+이전에 사용했던 스케일링된 집값 데이터를 read_csv 를 통해 불러옵니다. 이 때 index_col=[0]을 이용하여 csv 파일의 첫 번째 열에 있는 데이터의 인덱스를 배제하고 데이터프레임을 만듭니다.
 데이터프레임 df 에서 Price 를 제외한 나머지를 변수로 사용합니다. drop 의 axis=1 은 열을 의미하여 Price 를 열 기준으로 배제하겠다는 의미입니다.
 Price 를 타겟값 Y 로 사용합니다.
 
@@ -481,6 +501,7 @@ Y = df["Price"].to_numpy().reshape((-1,1))
 trainset 은 교차 검증을 위해 나누기 대문에 미리 DataLoader 를 정의하지 않습니다.
 
 ```python
+# 텐서 데이터로 변환하는 클래스
 class TensorData(Dataset):
   def __init__(self, x_data, y_data):
     self.x_data = torch.FloatTensor(x_data)
@@ -503,17 +524,18 @@ testloader = DataLoader(testset, batch_size=32, shuffle=False)
 
 ```python
 class Regressor(nn.Module):
-  def __init__(self):
-    super().__init__()
-    self.fc1 = nn.Linear(13, 50, bias=True)
-    self.fc2 = nn.Linear(50, 30, bias=True)
-    self.fc3 = nn.Linear(30, 1, bias=True)
-  
-  def forward(self, x):
-    x = self.fc1(x)
-    x = self.fc2(x)
-    x = self.fc3(x)
-    return x
+    def __init__(self):
+        super().__init__() # 모델 연산 정의
+        self.fc1 = nn.Linear(13, 50, bias=True) # 입력층(13) -> 은닉층1(50)으로 가는 연산
+        self.fc2 = nn.Linear(50, 30, bias=True) # 은닉층1(50) -> 은닉층2(30)으로 가는 연산
+        self.fc3 = nn.Linear(30, 1, bias=True) # 은닉층2(30) -> 출력층(1)으로 가는 연산
+    
+    def forward(self, x):
+        x = self.fc1(x) 
+        x = self.fc2(x) 
+        x = self.fc3(x) 
+      
+        return x
 ```
 
 ### 손실 함수와 교차 검증 정의
@@ -529,25 +551,28 @@ criterion = nn.MSELoss()
 
 ```python
 def evaluation(dataloader):
+    
+    predictions = torch.tensor([], dtype=torch.float) # 예측값을 저장하는 텐서
+    actual = torch.tensor([], dtype=torch.float) # 실제값을 저장하는 텐서
+        
+    with torch.no_grad():
+        model.eval() # 평가를 할 때에는 .eval() 반드시 사용해야 한다.
+        for data in dataloader:
+            inputs, values = data
+            outputs = model(inputs)
 
-  predictions = torch.tensor([], dtype=torch.float)
-  actual = torch.tensor([], dtype=torch.float)
+            predictions = torch.cat((predictions, outputs), 0) # cat을 통해 예측값을 누적
+            actual = torch.cat((actual, values), 0) # cat을 통해 실제값을 누적
+    
+    predictions = predictions.numpy() # 넘파이 배열로 변경
+    actual = actual.numpy() # 넘파이 배열로 변경
+    rmse = np.sqrt(mean_squared_error(predictions, actual)) # sklearn을 이용하여 RMSE 계산
+    model.train()
+    return rmse  
 
-  with torch.no_grad():
-    model.eval()
-    for data in dataloader:
-      inputs, values = data
-      outputs = model(inputs)
-
-      predictions = torch.cat((predictions, outputs), 0)
-      actual = torch.cat((actual, values), 0)
-  
-  predictions = predictions.numpy()
-  actual = actual.numpy()
-  rmse = np.sqrt(mean_squared_error(predictions, actual))
-  model.train()
-
-  return rmse
+# 평가 시 .eval()을 사용해야 하는 이유
+# 이번 예시에서는 상관없으나 평가 시에는 정규화 기술을 배제하여 온전한 모델로 평가를 해야한다. 따라서 .eval()을 사용한다.
+# 즉, 드랍아웃이나 배치 정규화 등과 같이 학습 시에만 사용하는 기술들이 적용 된 모델은 평가 시에는 비활성화 해야하며 학습 시 .train()을 사용한다.
 ```
 
 ### 교차 검증을 이용한 학습 및 평가
@@ -558,30 +583,42 @@ TensorData 로 정의된 데이터의 일부를 불러와 배치 데이터 형�
 
 ```python
 validation_loss = []
+
 for fold, (train_idx, val_idx) in enumerate(kfold.split(trainset)):
+    
+    train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx) # index 생성
+    val_subsampler = torch.utils.data.SubsetRandomSampler(val_idx) # index 생성
+    
+    # sampler를 이용한 DataLoader 정의
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=train_subsampler) 
+    valloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=val_subsampler)
+    
+    # 모델
+    model = Regressor()
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-7)
+    
+    for epoch in range(400): # 400번 학습을 진행한다.
 
-  train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
-  val_subsampler = torch.utils.data.SubsetRandomSampler(val_idx)
-  trainloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=train_subsampler)
-  valloader = torch.utils.data.DataLoader(trainset, batch_size=32, sampler=val_subsampler)
+        for data in trainloader: # 무작위로 섞인 32개 데이터가 있는 배치가 하나 씩 들어온다.
 
-  model = Regressor()
-  optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-7)
+            inputs, values = data # data에는 X, Y가 들어있다.
 
-  for epoch in range(400):
-    for data in trainloader:
-      inputs, values = data
-      optimizer.zero_grad()
+            optimizer.zero_grad() # 최적화 초기화
 
-      outputs = model(inputs)
-      loss = criterion(outputs, values)
-      loss.backward()
-      optimizer.step()
+            outputs = model(inputs) # 모델에 입력값 대입 후 예측값 산출
+            loss = criterion(outputs, values) # 손실 함수 계산
+            loss.backward() # 손실 함수 기준으로 역전파 설정 
+            optimizer.step() # 역전파를 진행하고 가중치 업데이트
 
-  train_rmse = evaluation(trainloader)
-  val_rmse = evaluation(valloader)
-  print("k-fold", fold, "Train Loss: %.4f, Validation Loss: %.4f" %(train_rmse, val_rmse))
-  validation_loss.append(val_rmse)
+    train_rmse = evaluation(trainloader) # 학습 데이터의 RMSE
+    val_rmse = evaluation(valloader)
+    print("k-fold", fold," Train Loss: %.4f, Validation Loss: %.4f" %(train_rmse, val_rmse)) 
+    validation_loss.append(val_rmse)
+
+validation_loss = np.array(validation_loss)
+mean = np.mean(validation_loss)
+std = np.std(validation_loss)
+print("Validation Score: %.4f, ± %.4f" %(mean, std))    
 ```
 
 ```
@@ -643,9 +680,9 @@ from torchsummary import summary
 class Regressor(nn.Module):
   def __init__(self):
     super().__init__()
-    self.fc1 = nn.Linear(13, 50)
-    self.fc2 = nn.Linear(50, 30)
-    self.fc3 = nn.Linear(30, 1)
+    self.fc1 = nn.Linear(13, 50) # 입력층(13) -> 은닉층(50)
+    self.fc2 = nn.Linear(50, 30) # 은닉층(50) -> 은닉층(50)
+    self.fc3 = nn.Linear(30, 1) # 은닉층(30) -> 출력층(1)
     self.dropout = nn.Dropout(0.5)
   
   def forward(self, x):
@@ -655,7 +692,7 @@ class Regressor(nn.Module):
     return x
 ```
 
-모델을 출력하면 `__ini__` 부분에서 정의된 구조를 확인할 수 있습니다.
+모델을 출력하면 `__init__` 부분에서 정의된 구조를 확인할 수 있습니다.
 
 ```python
 model = Regressor()
