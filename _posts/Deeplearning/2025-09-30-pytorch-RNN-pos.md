@@ -19,7 +19,7 @@ toc_label: "파이토치로 알아보는 순환 신경망"
 
 ## 1.1 시계열 데이터
 
-시계열 데이터랑 일정 시간 간격으로 배치된 데이터입니다. 대표적으로 시간에 따른 온도, 주식, 신호, 변화 등의 데이터가 있고, 추가적으로 음성, 대화 등의 데이터와 같이 단어가 나열된 형태로 연속적으로 관계가 있는 데이터라고 볼 수 있습니다.
+시계열 데이터란 일정 시간 간격으로 배치된 데이터입니다. 대표적으로 시간에 따른 온도, 주식, 신호, 변화 등의 데이터가 있고, 추가적으로 음성, 대화 등의 데이터와 같이 단어가 나열된 형태로 연속적으로 관계가 있는 데이터라고 볼 수 있습니다.
 
 <div align="center">
   <img src="/assets/images/deeplearning/pytorch/rnn/time_series_data.png" width="60%" height="50%"/>
@@ -110,15 +110,25 @@ Y = df[["Close"]].values
 마지막으로 GPU 용 텐서로 변환합니다. 여기서 y 데이터를 view(-1, 1)를 사용하여 2차원으로 바꿔주는데 바꿔주는 이유는 MSE Loss 가 기본적으로 2차원 타깃 데이터를 받기 때문입니다.
 
 ```python
+# 주가 데이터를 시퀀스 데이터로 만들기 위한 함수
 def seq_data(x, y, sequence_length):
-  x_seq = []
-  y_seq = []
 
-  for i in range(len(x) - sequence_length):
-    x_seq.append(x[i:i+sequence_length])
-    y_seq.append(y[i+sequence_length])
-  
-  return torch.FloatTensor(x_seq).to(device), torch.FloatTensor(y_seq).to(device).view(-1, 1)
+    x_seq = []
+    y_seq = []
+
+    # 입력 데이터의 개수에서 정해둔 sequence_length 만큼 루프를 반복
+    for i in range(len(x) - sequence_length):
+
+        # sequence_length 가 5라면
+        # i = 0 -> [0, 1, 2, 3, 4]
+        # i = 1 -> [1, 2, 3, 4, 5]
+        x_seq.append(x[i:i+sequence_length])
+
+        # 주식 데이터이므로 이전 시퀀스의 다음 데이터가 정답 데이터가 되므로
+        # i+sequence_length index 에 있는 값을 사용함
+        y_seq.append(y[i+sequence_length])
+
+    return torch.FloatTensor(x_seq).to(device), torch.FloatTensor(y_seq).to(device).view(-1, 1)
 ```
 
 시퀀스 길이를 5로 한다면 총 426개(431(전체데이터)-5(시퀀스 길이))의 시퀀스 데이터를 만들 수 있습니다.
@@ -129,10 +139,13 @@ split = 200
 sequence_length = 5
 
 x_seq, y_seq = seq_data(X, Y, sequence_length)
+
+# 전체 데이터 중 200개의 데이터만 학습 데이터로 사용하고 나머지 데이터는 평가 데이터로 사용함
 x_train_seq = x_seq[:split]
 y_train_seq = y_seq[:split]
 x_test_seq = x_seq[split:]
 y_test_seq = y_seq[split:]
+
 print(x_train_seq.size(), y_train_seq.size())
 print(x_test_seq.size(), y_test_seq.size())
 ```
@@ -169,32 +182,71 @@ hidden_size = 8
 
 `nn.RNN` 을 이용하면 한 줄로 모델이 정의됩니다. 이 때 주의할 점은 원래 `nn.RNN` 의 입력 데이터 크기는 시퀀스의 길이x배치사이즈x변수의크기 이기 때문에 (200, 5, 4) 크기의 데이터를 (5, 200, 4) 로 변경해야 합니다. 하지만 batch_first=True 를 적용하면 기존의 200x5x4 데이터를 그대로 사용할 수 있습니다.
 `self.fc` 는 RNN 에서 나온 출력값을 FC 층 하나를 거쳐 하나의 예측값을 뽑을 수 있도록 하기 위해 사용합니다.
-RNN 은 이전 h 를 받아 계산하기 때문에 첫 번째 계싼 시 이전 h 가 없기 때문에 초깃값을 영텐서로 정의하여 h0 를 대입합니다.
+RNN 은 이전 h 를 받아 계산하기 때문에 첫 번째 계산 시 이전 h 가 없기 때문에 초깃값을 영텐서로 정의하여 h0 를 대입합니다.
 정의된 `self.rnn` 을 사용합니다. 이 때 파이토치에서 제공하는 모델은 many to many 방법을 가지고 각 시간에 대한 예측값과 은닉 상태를 산출합니다. 이 예시에서는 은닉 상태를 사용하지 않기 때문에 out, _ 으로 예측값만을 받습니다.
 `out = out.reshape(out.shape[0], -1)` 은 모든 출력값을 사용하기 위해 out 을 일렬로 만들어 self.fc 에 넣습니다.
 
 ```python
 class VanillaRNN(nn.Module):
 
-  def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
-    super(VanillaRNN, self).__init__()
-    self.device = device
-    self.hidden_size = hidden_size
-    self.num_layers = num_layers
-    self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
-    self.fc = nn.Sequential(nn.Linear(hidden_size*sequence_length, 1), nn.Sigmoid())
+    def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
 
-  def forward(self, x):
-    h0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
-    out, _ = self.rnn(x, h0)
-    out = out.reshape(out.shape[0], -1)
-    out = self.fc(out)
-    return out
+        """
+        Args
+            input_size : 입력 특징의 차원 수
+            hidden_size : RNN 히든 레이어의 차원 수
+            sequence_length : 입력 시퀀스의 길이
+            num_layers : 쌓을 RNN 레이어의 수
+            device : CPU 혹은 GPU
+        """
+
+        super(VanillaRNN, self).__init__()
+        self.device = device
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+
+        # RNN Layer
+        # batch_first=True : 입력/출력 텐서의 첫 번째 차원을 배치 크기로 설정
+        # (batch_size, sequence_length, input_size) -> (batch_size, 5, 4)
+        self.rnn = nn.RNN(input_size, hidden_size, num_layers, batch_first=True)
+
+        # 분류기 (Fully Connected Layer)
+        # 이 모델은 RNN 의 모든 시퀀스(5개)의 출력을 펼쳐서 분류에 사용함
+        # 입력 차원 : hidden_size * sequence_length = 40
+        # 출력 차원 : 1
+        # Sigmoid : 출력을 0과 1사이의 값(확률)으로 변환
+        self.fc = nn.Sequential(nn.Linear(hidden_size*sequence_length, 1), nn.Sigmoid())
+
+    def forward(self, x):
+
+        # 1. 초기 은닉 상태 (h0) 설정
+        # nn.RNN 은 (num_layers, batch_size, hidden_size) 크기의 초기 은닉 상태가 필요함
+        # 0으로 채운 텐서를 생성하고, 지정된 device 로 보냄
+        h0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
+
+        # 2. RNN 순전파
+        # 입력 :
+        #   x: (B, 5, 4)
+        #   h0: (2, B, 8)
+        # 출력 :
+        #   out: 모든 시점(t=1~5)의 마지막 레이어(2번 째) 은닉 상태
+        #        shape: (B, sequence_length, hidden_size) -> (B, 5, 8)
+        out, _ = self.rnn(x, h0)
+
+        # 3. 텐서 펼치기 (Flatten)
+        # FC 레이어에 넣기 위해 3D 텐서(out)를 2D 텐서로 변환
+        # (B, 5, 8) -> (B, 5*8) = (B, 40)
+        out = out.reshape(out.shape[0], -1)
+
+        # 4. 분류기 통과
+        # (B, 40) -> Linear(40, 1) -> (B, 1) -> Sigmoid -> (B, 1)
+        out = self.fc(out)
+        return out
 ```
 
 ### RNN 모델 불러오기
 
-입력값의 크기, 은식 상태 크기, 시퀀스 길이, 은닉층 개수, gpu 연산을 위한 device 변수까지 모델에 넣어줍니다. 또한 GPU 연산을 위해 model 뒤에 .to(device)를 붙여줍니다.
+입력값의 크기, 은닉 상태 크기, 시퀀스 길이, 은닉층 개수, gpu 연산을 위한 device 변수까지 모델에 넣어줍니다. 또한 GPU 연산을 위해 model 뒤에 .to(device)를 붙여줍니다.
 
 ```python
 model = VanillaRNN(input_size=input_size,
@@ -313,9 +365,9 @@ RNN 은 연속적으로 활성화 함수 Tanh 를 계산하는 형태입니다. 
 
 ### 장기 의존성
 
-기본 RNN 의 경우 시퀀스가 너무 길다면 앞 쪽의 타임 스텝의 정보가 후반 타입 스텝까지 충분히 전달되지 못하는 문제가 있습니다.
+기본 RNN 의 경우 시퀀스가 너무 길다면 앞쪽의 타임 스텝의 정보가 후반 타임 스텝까지 충분히 전달되지 못하는 문제가 있습니다.
 
-## 2.2 LSTM(Long Shot-Term Memory)
+## 2.2 LSTM(Long Short-Term Memory)
 
 LSTM 은 기본 RNN 의 단점을 보완하고자 셀 상태 s 와 모든 값이 0과 1 사이인 입력 게이트 i, 망각 게이트 f, 출력 게이트 $o$ 를 추가하여 이전 정보와 현재 정보의 비중을 조율하여 예측에 반영되고 그 값이 다음 타임 스텝으로 전달됩니다. 파이토치에서 제공하는 nn.LSTM 을 사용하여 내부 계산을 별도로 할 필요는 없습니다. 즉 LSTM 의 모델 파라미터인 $W$ 와 $U$ 들이 자동으로 관리됩니다.
 
@@ -331,21 +383,31 @@ LSTM 은 기본 RNN 의 단점을 보완하고자 셀 상태 s 와 모든 값이
 
 ```python
 class LSTM(nn.Module):
-  def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
-    super(LSTM, self).__init__()
-    self.device = device
-    self.hidden_size = hidden_size
-    self.num_layers = num_layers
-    self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-    self.fc = nn.Linear(hidden_size*sequence_length, 1)
-  
-  def forward(self, x):
-    h0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
-    c0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
-    out, _ = self.lstm(x, (h0, c0))
-    out = out.reshape(out.shape[0], -1)
-    out = self.fc(out)
-    return out
+    def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
+
+        """
+        Args : 이전 vanillaRNN 과 동일
+        """
+        super(LSTM, self).__init__()
+        self.device = device
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size*sequence_length, 1)
+
+    def forward(self, x):
+
+        # 1. 초기 은닉 상태(h0) 및 셀 상태(c0) 설정
+        # LSTM 은 RNN 과 달리 (h, c) 두 개의 상태를 가짐
+        # h0 (Hidden_state) : (num_layers, B, hidden_size) -> (2, batch_size, 8)
+        h0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
+
+        # c0 (Cell state) : (num_layers, B, hidden_size) -> (2, B, 8)
+        c0 = torch.zeros(self.num_layers, x.size()[0], self.hidden_size).to(self.device)
+        out, _ = self.lstm(x, (h0, c0))
+        out = out.reshape(out.shape[0], -1)
+        out = self.fc(out)
+        return out
 ```
 
 LSTM 을 이용하여 주가 그래프를 그려보면 아래와 같습니다. 학습 시 RNN 보다 loss 값이 빠르게 수렴하는 것을 제외하곤 RNN 과 큰 차이는 없습니다.
@@ -356,7 +418,7 @@ LSTM 을 이용하여 주가 그래프를 그려보면 아래와 같습니다. �
 
 ## 2.3 GRU(Gated Recurrent Units)
 
-LSTM 은 기본 RNN 에서 추가로 셀 상태와 3개의 게이트를 사용하기 때문에 속도가 느립니다. 이를 해결하기 위해 셀 상태를 없애고 2개의 게이트만 사용하여 LSTM 을 간소화한 모델이 GRU 입니다. 아래 그림과 같이 업데이트 게이트 $z$ 와 리셋 게이트 $r$ 을 통해 현재 은닉 상태를 연산할 때 이전 은식 상태를 얼마나 반영할 것인지를 조율합니다.
+LSTM 은 기본 RNN 에서 추가로 셀 상태와 3개의 게이트를 사용하기 때문에 속도가 느립니다. 이를 해결하기 위해 셀 상태를 없애고 2개의 게이트만 사용하여 LSTM 을 간소화한 모델이 GRU 입니다. 아래 그림과 같이 업데이트 게이트 $z$ 와 리셋 게이트 $r$ 을 통해 현재 은닉 상태를 연산할 때 이전 은닉 상태를 얼마나 반영할 것인지를 조율합니다.
 
 <div align="center">
   <img src="/assets/images/deeplearning/pytorch/rnn/gru_image.png" width="50%" height="40%"/>
@@ -370,20 +432,25 @@ RNN, LSTM 과 마찬가지로 은닉 상태의 초기값은 0으로 합니다.
 
 ```python
 class GRU(nn.Module):
-  def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
-    super(GRU, self).__init__()
-    self.device = device
-    self.hidden_size = hidden_size
-    self.num_layers = num_layers
-    self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
-    self.fc = nn.Linear(hidden_size*sequence_length, 1)
-  
-  def forward(self, x):
-    h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
-    out, _ = self.gru(x, h0)
-    out = out.reshape(out.shape[0], -1)
-    out = self.fc(out)
-    return out
+
+    """
+    vanillaRNN 과 동일
+    """
+
+    def __init__(self, input_size, hidden_size, sequence_length, num_layers, device):
+        super(GRU, self).__init__()
+        self.device = device
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size*sequence_length, 1)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
+        out, _ = self.gru(x, h0)
+        out = out.reshape(out.shape[0], -1)
+        out = self.fc(out)
+        return out
 ```
 
 RNN, LSTM 과 달리 GRU 는 평가 데이터에서 갑자기 하향하는 부분을 캐치하여 갑자기 하향하는 부분에서 실제 평가 데이터와 동일한 모습을 보여주어 이번에 사용한 주가 데이터에서는 GRU 가 가장 성능이 좋은 듯 합니다.
@@ -394,7 +461,7 @@ RNN, LSTM 과 달리 GRU 는 평가 데이터에서 갑자기 하향하는 부�
 
 # 3. Bi-LSTM
 
-우리가 지금까지 다른 순환 신경망은 이전 상태의 정보를 현재 상태로 넘겨주어 연산을 하는 방식입니다. 즉, 데이터 처리의 방향이 한 쪽으로 흐르는 정방향 연산임을 알 수 있습니다. 따라서 다음 상태를 현재 연산에 활용하기 위해 양방향 연산에 대한 구조를 만들 수 있습니다. 바로 양방향 LSTM(Bidirectional LSTM)은 순방향과 역방향의 연산을 담당하는 은닉층을 각각 두어 서로 다른 방향에 대해 계산을 수행하는 LSTM 입니다.
+우리가 지금까지 다룬 순환 신경망은 이전 상태의 정보를 현재 상태로 넘겨주어 연산을 하는 방식입니다. 즉, 데이터 처리의 방향이 한 쪽으로 흐르는 정방향 연산임을 알 수 있습니다. 따라서 다음 상태를 현재 연산에 활용하기 위해 양방향 연산에 대한 구조를 만들 수 있습니다. 바로 양방향 LSTM(Bidirectional LSTM)은 순방향과 역방향의 연산을 담당하는 은닉층을 각각 두어 서로 다른 방향에 대해 계산을 수행하는 LSTM 입니다.
 
 <div align="center">
   <img src="/assets/images/deeplearning/pytorch/rnn/bilstm_image.png" width="50%" height="40%"/>
@@ -426,29 +493,31 @@ testloader = DataLoader(testset, batch_size=128, shuffle=False)
 
 ### Bi-LSTM 모델 구축하기
 
-클래스를 초기화할 때 입력값의 크기(이미지의 열 크기), 은닉층의 노드수, 은닉층의 개수, 시계열의 길이(이미지의 행 크기), 클래스 수, gpu 활용 여부에 대한 값을 받습니다.
+클래스를 초기화할 때 입력값의 크기(이미지의 열 크기), 은닉층의 노드 수, 은닉층의 개수, 시계열의 길이(이미지의 행 크기), 클래스 수, gpu 활용 여부에 대한 값을 받습니다.
 `self.lstm` 에서 bidirectional=True 으로 활성화하여 양방향 LSTM 을 생성하고 batch_first = True 로 지정하여 크기가 (배치 사이즈, 시계열의 길이, 입력값의 크기)를 지닌 데이터를 활용할 수 있도록 합니다.
-모든 타임 스탭에 대한 LSTM 결과를 분류에 사용합니다. 따라서 `self.fc` 의 입력값의 크기는 시계열의 길이\*은닉층의크기\*2 입니다. 양방향 LSTM 은 정방향, 역방향에 대한 LSTM 을 계산한 후 합친 결과(concatenate)를 사용합니다. 따라서 각각의 은닉층 결과 2개가 합쳐지므로 2를 곱하는 것입니다.
-모델에서 나온 out 의 크기는 배치사이즈, 시계열의 길이, 은닉층의 노드수\*2가 됩니다. 모든 데이터를 `nn.Linear` 에 사용하기 위해 reshape 를 하여 크기를 (배치 사이즈, 시계열의 길이\*은닉층의 노드수\*2)로 변경합니다. 마지막으로 self.fc 를 거친 후 크기가 10(클래스 수)인 출력 벡터를 산출합니다.
+모든 타임 스텝에 대한 LSTM 결과를 분류에 사용합니다. 따라서 `self.fc` 의 입력값의 크기는 시계열의 길이\*은닉층의 크기\*2 입니다. 양방향 LSTM 은 정방향, 역방향에 대한 LSTM 을 계산한 후 합친 결과(concatenate)를 사용합니다. 따라서 각각의 은닉층 결과 2개가 합쳐지므로 2를 곱하는 것입니다.
+모델에서 나온 out 의 크기는 배치사이즈, 시계열의 길이, 은닉층의 노드 수\*2가 됩니다. 모든 데이터를 `nn.Linear` 에 사용하기 위해 reshape 를 하여 크기를 (배치 사이즈, 시계열의 길이\*은닉층의 노드 수\*2)로 변경합니다. 마지막으로 self.fc 를 거친 후 크기가 10(클래스 수)인 출력 벡터를 산출합니다.
 
 ```python
 class BiLSTM(nn.Module):
-  def __init__(self, input_size, hidden_size, num_layers, seq_length, num_classes, device):
-    super(BiLSTM, self).__init__()
-    self.device = device
-    self.hidden_size = hidden_size
-    self.num_layers = num_layers
-    self.seq_length = seq_length
-    self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
-    self.fc = nn.Linear(seq_length*hidden_size*2, num_classes)
+    def __init__(self, input_size, hidden_size, num_layers, seq_length, num_classes, device):
+        super(BiLSTM, self).__init__()
+        self.device = device
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.seq_length = seq_length
 
-  def forward(self, x):
-    h0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(self.device)
-    c0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(self.device)
-    out, _ = self.lstm(x, (h0, c0))
-    out = out.reshape(-1, self.seq_length*self.hidden_size*2)
-    out = self.fc(out)
-    return out
+        # bidirectional=True : bi-LSTM 을 사용함
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(seq_length*hidden_size*2, num_classes)
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(self.device)
+        c0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(self.device)
+        out, _ = self.lstm(x, (h0, c0))
+        out = out.reshape(-1, self.seq_length*self.hidden_size*2)
+        out = self.fc(out)
+        return out
 ```
 
 ### 하이퍼 파라미터 정의하기
@@ -459,8 +528,9 @@ Bi-LSTM 의 은닉층 정보는 적절한 값을 넣어주고 클래스 수는 1
 
 ```python
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-sequence_length = trainset.data.size(1)
-input_size = trainset.data.size(2)
+sequence_length = trainset.data.size(1) # 28
+input_size = trainset.data.size(2) # 28
+
 num_layers = 2
 hidden_size = 12
 num_classes = 10
@@ -486,15 +556,18 @@ for epoch in range(51):
 
   for data in trainloader:
     optimizer.zero_grad()
-    inputs, labels = data[0].to(device).squeeze(1), data[1].to(device) #squeeze(1) 을 통해 데이터의 크기를 (배치사이즈, 28, 28)로 변환
+
+    # 입력 데이터에 squeeze 를 해주는 이유는 이미지 데이터기 때문에 중간에 채널 벡터를 없애주기 위해
+    # squeeze 를 진행함
+    inputs, labels = data[0].to(device).squeeze(1), data[1].to(device)
     outputs = model(inputs)
     loss = criterion(outputs, labels)
     loss.backward()
     optimizer.step()
-    _, predicted = torch.max(outputs.detach(), 1) # 학습 도중 정확도를 구할 때에는 변수 업데이트가 필요 없으므로 detach() 을 사용해 outputs 의 requires_grad 를 비활성화
+    _, predicted = torch.max(outputs.detach(), 1)
     total += labels.size(0)
     correct += (predicted == labels).sum().item()
-  
+
   print("[%d] train acc: %.2f"%(epoch, 100*correct/total))
 ```
 
