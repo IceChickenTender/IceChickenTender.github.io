@@ -46,7 +46,7 @@ import matplotlib.pyplot as plt
 
 ### 모델 정의하기
 
-이전에 공부했던 RestNet 을 이용합니다. 코드가 필요하면 <https://icechickentender.github.io/deeplearning/pytorch/pytorch-CNN-post/#3-resnet> 을 참조하시기 바랍니다.
+이전에 공부했던 ResNet 을 이용합니다. 코드가 필요하면 <https://icechickentender.github.io/deeplearning/pytorch/pytorch-CNN-post/#3-resnet> 을 참조하시기 바랍니다.
 
 ```python
 ...생략...
@@ -67,7 +67,7 @@ optimizer = optim.Adam(resnet.parameters(), lr=1e-3)
 
 평가만 진행하기 때문에 requires_grad 를 비활성화합니다.
 
-평가 시 정규화 기법들이 작도앟지 않도록 eval 모드로 설정합니다.
+평가 시 정규화 기법들이 작동하지 않도록 eval 모드로 설정합니다.
 
 함수가 끝나는 부분에 다시 모델을 학습 시켜야 하므로 train 모드로 변경합니다.
 
@@ -170,7 +170,7 @@ plt.show()
   <img src="/assets/images/deeplearning/pytorch/performance_improvement/dropout_image.png" width="50%" height="40%"/>
 </div>
 
-인공 신경망에서 무작위로 일정한 비율의 노드를 제외하여 학습하는 방법을 드롭아웃(Droput)이라고 합니다. 따라서 한 번 변수 갱신이 일어날 때마다 제외된 노드와 관련 있는 변수는 갱신이 되지 않기 때문에 학습 데이터에 대한 모델 최적화를 억제할 수 있습니다. 드롭아웃의 세팅 방법에 대해서 살펴보면 출력층은 예측값이 나오는 단계이기 때문에 적용하지 않습니다. 즉, 출력층의 노드는 절대 지우지 않으며 원하는 층에만 적용할 수도 있고 제외 비율도 조정을 할 수 있습니다. 추가적으로 학습이 반복될 때마다 제외할 노드를 무작위로 선택하여 학습에서 과적합을 방지하며 시험 데이터를 이용하는 것과 같은 평가 단계에서는 드롭아웃을 적용하지 않고 원래 전체 모델을 사용합니다(.eval() 함수 선언)
+인공 신경망에서 무작위로 일정한 비율의 노드를 제외하여 학습하는 방법을 드롭아웃(Dropout)이라고 합니다. 따라서 한 번 변수 갱신이 일어날 때마다 제외된 노드와 관련 있는 변수는 갱신이 되지 않기 때문에 학습 데이터에 대한 모델 최적화를 억제할 수 있습니다. 드롭아웃의 세팅 방법에 대해서 살펴보면 출력층은 예측값이 나오는 단계이기 때문에 적용하지 않습니다. 즉, 출력층의 노드는 절대 지우지 않으며 원하는 층에만 적용할 수도 있고 제외 비율도 조정을 할 수 있습니다. 추가적으로 학습이 반복될 때마다 제외할 노드를 무작위로 선택하여 학습에서 과적합을 방지하며 시험 데이터를 이용하는 것과 같은 평가 단계에서는 드롭아웃을 적용하지 않고 원래 전체 모델을 사용합니다(.eval() 함수 선언)
 
 `nn.Dropout(0.5)` 는 해당 노드에 50% 를 선택해 노드를 사용하지 않겠다는 의미로 `F.relu(self.fc1(x))` 의 노드는 50개이므로 25개의 노드가 비활성화됩니다. 또다른 표현으로는 torch.nn.functional.dropout(input, p=0.5, training=True)가 있습니다.
 
@@ -198,7 +198,6 @@ class Regressor(nn.Module):
 
 ### 코드로 교란 라벨 알아보기
 
-
 ### 교란 라벨 정의하기
 
 실제 라벨을 뽑을 확률을 `self.p_c`로 부여하고 나머지는 `self.p_i` 값을 부여합니다. 예를 들면, CIFAR10 데이터를 사용한다고 가정하면, 클래스 수가 10개이고 교란 라벨 비율이 30%라면 self.p_c=73/100, self.p_i=3/100이 되고, 실제 라벨이 5라면 확률 분포는 (3/100, 3/100, 3/100, 3/100, 3/100, 73/100, 3/100, 3/100, 3/100, 3/100)이 됩니다. 여기서 6번째 가 73/100 이 되는 이유는 CIFAR10 데이터의 라벨은 0부터 9까지기 때문에 5 라벨은 6번째입니다.
@@ -209,23 +208,80 @@ class Regressor(nn.Module):
 
 ```python
 class DisturbLabel(torch.nn.Module):
-	def __init__(self, alpha, num_classes):
-		super(DisturbLabel, self).__init__()
-		self.alpha = alpha
-		self.C = num_classes
-		self.p_c = (1-((self.C -1)/self.C) * (alpha/100))
-		self.p_i = (1-self.p_c)/(self.C-1)
+    """
+    입력된 정답 라벨(y)을 'alpha' 값에 기반하여
+    일정 확률로 다른 라벨로 교란시키는 모듈
+    """
+    def __init__(self, alpha, num_classes):
 
-	def forward(self, y):
-		y_tensor = y.type(torch.LongTensor).view(-1, 1)
-		depth = self.C
-		y_one_hot = torch.ones(y_tensor.size()[0], depth) * self.p_i
-		y_one_hot.scatter_(1, y_tensor, self.p_c)
-		y_one_hot = y_one_hot.view(*(tuple(y.shape)+(-1,)))
-		distribution = torch.distributions.OneHotCategorical(y_one_hot)
-		y_disturbed = distribution.sample()
-		y_disturbed = y_disturbed.max(dim=1)[1]
-		return y_disturbed
+        """
+        Args:
+            alpha(float) : 라벨 교란 수준을 제어하는 파라미터
+            num_classes(int) : 데이터셋의 총 클래스 수
+        """
+
+        super(DisturbLabel, self).__init__()
+        self.alpha = alpha
+        self.C = num_classes
+
+        # 확률 계산
+        # p_c: '정답' 라벨이 유지될 확률 (Probability of Correct)
+        # alpha 는 총 노이즈 비율이 아니라, 노이즈를 계산하는 파라미터로 사용됩니다.
+        # 예시 : C=10, alpha=20 (20%) 일 때
+        # ((C-1)/C) * (alpha/100) = (9/10) * (20/100) = 0.9 * 0.2 = 0.18
+        # p_c = 1 * 0.18 = 0.82
+        # -> 정답 라벨을 82% 확률로 유지
+        self.p_c = (1 - ((self.C - 1) / self.C) * (alpha / 100)) # Multinoulli distribution
+        
+        # p_i: '오답' 라벨이 선택될 확률 (Probability of Incorrect)
+        # 'p_c'를 제외한 나머지 확률 (1-p_c)을 C-1개의 '오답' 라벨들에게 균등하게 분배합니다.
+        # 예시: C=10, p_c=0.82 일 때
+        # -> 9개의 각 오답 라벨은 2%의 확률로 선택됩니다.
+        # (최종 확률 분포 : 0.02, 0.02, ..., 0.82(정답), ..., 0.02) -> 합 1.0)
+        self.p_i = (1-self.p_c)/(self.C-1)
+
+    def forward(self, y):
+
+        """
+        정답 라벨 배치(y)을 입력받아 교란된 라벨 배치를 반환합니다.
+        Args:
+            y (torch.Tensor): (Batch_size,) 형태의 정답 라벨 텐서
+        """
+        
+        # 1. 라벨을 scatter_ 함수에 사용하기 위해 (Batch_size, 1) 형태로 변환
+        y_tensor = y.type(torch.LongTensor).view(-1, 1)
+        depth = self.C # 클래스 수
+
+        # 2. (Batch_size, 10) 크기의 텐서를 만들고,
+        # '오답' 확률인 p_i(e.g., 0.02)로 모두 초기화
+        y_one_hot = torch.ones(y_tensor.size()[0], depth) * self.p_i
+
+        # 3. scatter_ 함수를 사용하여 '정답' 인덱스에만 '정답' 확률인 p_c (e.g., 0.82) 값을 덮어씁니다.
+        # dim=1: 1번 차원(클래스 차원)을 기준으로 작업
+        # index=y_tensor: 정답 라벨의 인덱스
+        # src=self.p_c: 덮어쓸 값
+        y_one_hot.scatter_(1, y_tensor, self.p_c)
+
+        # 4. (선택적) 원본 y의 다차원 형태를 복원하기 위한 view
+        # (y가 1D (Batch_size,) 였다면, (B, 10) -> (B, 10)으로 사실상 통일)
+        y_one_hot = y_one_hot.view(*(tuple(y.shape) + (-1,))) # create disturbed labels
+
+        # 5. Multinoulli 분포(다항 분포) 객체 생성
+        # 각 샘플(row)마다 [0.02, ..., 0.82, ...]와 같은 확률 분포를 가짐
+        distribution = torch.distributions.OneHotCategorical(y_one_hot) # sample from Multinoulli distribution
+
+        # 6. 이 분포에 따라 새로운 라벨을 '샘플링' (추출)
+        # 82% 확률로 정답 인덱스가, 18% 확률로 오답 인덱스가 뽑힘
+        # 결과: (Batch_size, 10) 크기의 `원-핫 인코딩'된 텐서
+        y_disturbed = distribution.sample()
+
+        # 7. 샘플링된 원-핫 텐서를 다시 클래스 인덱스(숫자)로 변환
+        # .max(dim=1) -> (값, 인덱스) 튜플 반환
+        # [1] -> 인덱스만 선택
+        y_disturbed = y_disturbed.max(dim=1)[1]
+
+        # 8. 최종 교란된 라벨 (Batch_size,) 텐서 반환
+        return y_disturbed
 ```
 
 ### 교란 라벨 확인하기
@@ -442,7 +498,7 @@ Test accuracy: 82.46 %
 
 ### 노이즈 생성하기
 
-데이터는 이전에 회귀 모델을 알아보기 위해 사용했던 주식 데이터를 사용하였습니다.
+데이터는 이전에 회귀 모델을 알아보기 위해 사용했던 집값 데이터를 사용하였습니다.
 
 ```python
 df = pd.read_csv("/content/drive/MyDrive/pytorch/data/reg.csv", index_col=[0])
@@ -630,12 +686,12 @@ for epoch in range(400): # 400번 학습을 진행한다.
 분류 문제에서 원-핫 벡터를 생각해 보면 (1,0,0)과 같이 0과 1로 구성되어 있고 우리는 소프트맥스나 시그모이드 함수를 통해 0과 1 사이의 예측값을 출력합니다. 이때 교차 엔트로피 손실 함수를 계산할 때 실제 값을 0과 1이 아닌, 예를 들어 0.1과 0.8로 구성해서 과적합을 방지하는 기술이 라벨 스무딩(Label Smoothing)입니다. 직관적으로 말하자면 0과 1을 맞춰야 하는 문제에서 예측값이 0.7이 나왔다면 원래 1을 맞추기 위해 1에 가까워지도록 학습이 될 것입니다. 이때 기준을 0.8로 낮추면서 0.7만 나와도 이 정도면 맞았다고 모델이 스스로를 인정하면서 실제값에 가깝게 가려고 하지 않고 정답을 맞히게 되어 과적합을 막아주는 개념입니다. 라벨 스무딩의 공식은 다음과 같습니다.
 
 $$
-y_{ls} = (1-\alpha)y+\frac{\alpha}{K-1}
+y_{ls} = (1-\alpha)y+\frac{\alpha}{K-1}(1-y)
 $$
 
 - K 는 클래스 수
 - $\alpha$ 는 스무딩 비율,
-- $y$는 0또는 1
+- $y$는 0또는 1 (0은 라벨 0을 의미하며, 1은 라벨 1을 의미함)
 
 예제와 위 공식을 이용해 실제 라벨 스무딩을 적용해 보면 클래스가 3개인 분류 문제에서는 라벨값이 0, 1, 2이고 원 핫 벡터로 표현할 때에는 (1,0,0), (0,1,0), (0,0,1)이 됩니다. 이때, 스무딩 비율이 0.1이면 위 공식에 의해 모든 실제 타깃에서 1은 0.9으로 0은 0.05으로 변환하여 0과 1 사이의 차이를 0.9과 0.05 으로 줄입니다.   
 파이토치에서 제공하는 크로스 엔트로피 함수 nn.CrossEntropyLoss()는 실제 라벨의 원 핫 벡터를 입력으로 받을 수 없습니다. 따라서 라벨 스무딩을 적용할 경우 원 핫 벡터를 사용할 수 있도록 별도로 손실 함수를 만들어 주어야 합니다.
@@ -686,21 +742,29 @@ import torchvision.transforms as tr
 
 우선 우리가 사용할 데이터는 클래스의 수가 2개이고, (14개, 4개) 로 되어 있는 이미지 데이터를 사용합니다. 즉 클래스가 0인 것이 14개, 클래스가 1인 것이 4개가 있다고 생각하시면 됩니다.
 
-데이터를 기준으로 코드 설명을 하자면, 각 클래스마다 라벨의 개수를 세어줍니다. 그리고 라벨이 뽑힐 가중치를 만들어주어야 하는데 우리가 원하는 것은 각 클래스별로 라벨이 균등하게 뽑게 하고 싶은 상황입니다. 그렇다면 개수가 적은 데이터에는 높은 확률을 개수가 많은 데이터에는 낮은 확률을 부여하도록 해야 합니다. 그래서 가중치로 1/(각 라벨의 개수) 그래서 1/count 로 동일하게 해당 라벨 전체에 할당합니다.
+데이터를 기준으로 코드 설명을 하자면, 각 클래스마다 라벨의 개수를 세어줍니다. 그리고 라벨이 뽑힐 가중치를 만들어주어야 하는데 우리가 원하는 것은 각 클래스별로 라벨을 균등하게 뽑고 싶은 상황입니다. 그렇다면 개수가 적은 데이터에는 높은 확률을 개수가 많은 데이터에는 낮은 확률을 부여하도록 해야 합니다. 그래서 가중치로 1/(각 라벨의 개수) 그래서 1/count 로 동일하게 해당 라벨 전체에 할당합니다. 이렇게 하면 라벨이 많은 클래스일 수록 더 적은 확률 값을 가지게 됩니다.
 
 그리고 weight_list 에는 라벨의 개수 만큼 가중치 값을 넣어줍니다.
 
 ```python
 def make_weights(labels, nclasses):
-  labels = np.array(labels)
-  weight_list = []
-  for cls in range(nclasses):
-    idx = np.where(labels == cls)[0]
-    count = len(idx)
-    weight = 1/count
-    weights = [weight] * count
-    weight_list += weights
-  return weight_list
+
+    """
+    Args:
+        labels : 라벨 데이터
+        nclasses : 클래스의 수
+    """
+
+    # 라벨이 담긴 자료구조를 numpy array 로 변경
+    labels = np.array(labels)
+    weight_list = [] # 클래스별 가중치를 담을 리스트 선언
+    for cls in range(nclasses):
+        idx = np.where(labels == cls)[0]
+        count = len(idx)
+        weight = 1/count # 1/라벨의 개수 확률
+        weights = [weight] * count # 확률x라벨 개수 만큼 가지는 weights 리스트를 정의
+        weight_list += weights # weight_list 에 weights 를 추가
+    return weight_list
 ```
 
 ### 이미지 데이터 불러오기
@@ -886,20 +950,53 @@ class TrainTransform:
 
 ```python
 def balanced_subset(data, labels, num_cls, num_data):
-  num_data_per_class = num_data // num_cls
-  data1 = torch.tensor([], dtype=torch.float)
-  data2 = torch.tensor([], dtype=torch.float)
-  labels1 = torch.tensor([], dtype=torch.long)
-  labels2 = torch.tensor([], dtype=torch.long)
 
-  for cls in range(num_cls):
-    idx = np.where(labels.numpy() == cls)[0]
-    shuffled_idx = np.random.choice(len(idx), len(idx), replace=False)
-    data1 = torch.cat([data1, data[shuffled_idx[:num_data_per_class]]], dim=0)
-    data2 = torch.cat([data2, data[shuffled_idx[num_data_per_class:]]], dim=0)
-    labels1 = torch.cat([labels1, labels[shuffled_idx[:num_data_per_class]]], dim=0)
-    labels2 = torch.cat([labels2, labels[shuffled_idx[num_data_per_class:]]], dim=0)
-  return data1, data2, labels1, labels2
+    """
+    전체 데이터셋(data, labels)을 두 개의 서브셋으로 분리합니다.
+    1. (data1, labels1): 'num_data' 개수만큼 클래스별로 균등하게 추출된 '균형 서브셋(balanced subset)
+    2. (data2, labels2): 1번에 포함되지 않은 나머지 데이터
+
+    MNIST 예시 기준
+    data : 전체 MNIST 이미지 텐서
+    labels : 전체 MNIST 라벨 텐서
+    num_cls : 10
+    num_data : 2000(추출할 총 데이터 개수)
+    """
+
+    # 1. 서브셋1(data1)에 클래스별로 몇 개씩 할당할지 계산
+    # num_data_per_classes = 2000 // 10 = 200
+    # 즉, 각 클래스마다 200개씩 추출합니다.
+    num_data_per_class = num_data // num_cls
+
+    # 2. 결과를 저장할 빈 텐서 초기화
+    data1 = torch.tensor([], dtype=torch.float)
+    data2 = torch.tensor([], dtype=torch.float)
+    labels1 = torch.tensor([], dtype=torch.long)
+    labels2 = torch.tensor([], dtype=torch.long)
+    
+    # 3. 클래스별로 반복
+    for cls in range(num_cls):
+
+        # 현재 클래스에 해당하는 모든 데이터의 인덱스(위치)를 찾음
+        # (e.g., cls=7 일 때, 전체 라벨 중 '7인' 것들의 인덱스 [5, 12, 29, ...])
+        idx = np.where(labels.numpy() == cls)[0]
+
+        # 찾은 인덱스들을 무작위로 섞음
+        # (e.g., [5, 12, 29, ...] -> [29, 5, 12, ...])
+        # replace=False: 비복원 추츨 (중복 없이 섞기)
+        shuffled_idx = np.random.choice(len(idx), len(idx), replace=False)
+
+        # 셔플된 인덱스를 사용해 data1 / data2 분리
+
+        # 셔플된 인덱스에서 앞에서부터 200개를 선택
+        # 해당 인덱스의 이미지와 라벨을 data1, labels1 에 추가
+        # 셔플된 인덱스에서 200개 이후의 나머지 인덱스 전체를 선택
+        # 해당 인덱스의 이미지와 라벨을 data2, labels2 에 추가
+        data1 = torch.cat([data1, data[shuffled_idx[:num_data_per_class]]], dim=0)
+        data2 = torch.cat([data2, data[shuffled_idx[num_data_per_class:]]], dim=0)
+        labels1 = torch.cat([labels1, labels[shuffled_idx[:num_data_per_class]]], dim=0)
+        labels2 = torch.cat([labels2, labels[shuffled_idx[num_data_per_class:]]], dim=0)
+    return data1, data2, labels1, labels2
 ```
 
 ### 데이터 불러오기
@@ -1244,4 +1341,4 @@ Output :
 # 마치며
 
 이번 `파이토치를 이용한 딥러닝 성능 개선` 포스트를 마지막으로 파이토치 기본 다지기 공부를 마쳤습니다. 이번 성능 개선에서는 이론에서만 알고 있던 딥러닝 모델 성능 개선과 관련된 것들을 실전으로 직접 해볼 수 있어 실전 경험을 많이 쌓을 수 있었습니다. 그리고 이번 성능 개선 포스트를 마지막으로 이제 파이토치 기본 다지기 포스트 정리가 끝날 예정입니다. 이전 포스트에서도 언급을 했지만 저는 딥러닝호형 저 `딥러닝을 위한 파이토치 입문` 이라는 책을 참고하여 포스트를 작성하였습니다. 이 책은 파이토치 입문에 대한 책이지만 이론적인 부분 특히 수식 그리고 코드 설명에 대해서는 설명이 조금 부족합니다만, 책에서 제공되는 파이토치 코드는 실제 딥러닝 모델을 구현하고, 학습하는 루프까지 잘 정리가 되어 있어 저처럼 이전에 딥러닝을 배우긴 했지만 그때 그때 필요한 것들만 배우느라 기초적이거나 다른 것들을 배우지 못한 사람들에게는 아주 유용한 책인것 같아 추천합니다. 그리고 한 가지 아쉬웠던 것은 저는 자연어처리를 전공으로 했기 때문에 자연어처리와 관련된 내용보다는 이미지처리에 대한 코드들이 대부분인게 조금 아쉬웠던 것 같습니다.
-긴 글 일어주셔서 감사드리며, 잘못된 내용이나 오타, 궁금하신 사항이 있으시면 댓글 달아주시기 바랍니다.
+긴 글 읽어주셔서 감사드리며, 잘못된 내용이나 오타, 궁금하신 사항이 있으시면 댓글 달아주시기 바랍니다.
