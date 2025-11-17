@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] LangChain 기초"
+title: "[LLM/RAG] LangChain - 1. LangChain 기초"
 categories:
   - LLM/RAG
   - LangChain

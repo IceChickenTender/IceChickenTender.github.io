@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] 트랜스포머 모델 사용을 위한 허깅페이스 라이브러리 사용법 알아보기"
+title: "[LLM/RAG] LLM Application - 1. 트랜스포머 모델 사용을 위한 허깅페이스 라이브러리 사용법 알아보기"
 categories:
   - LLM/RAG
 tags:

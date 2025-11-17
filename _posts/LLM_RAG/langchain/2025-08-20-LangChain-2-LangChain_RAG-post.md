@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] LangChain 을 이용한 RAG 기초"
+title: "[LLM/RAG] LangChain - 2. LangChain 을 이용한 RAG 기초"
 categories:
   - LLM/RAG
   - LangChain

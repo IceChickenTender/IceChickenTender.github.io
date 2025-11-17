@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] LangChain Agent - 도구 호출(Tool Calling) "
+title: "[LLM/RAG] LangChain - 3. LangChain Agent - 도구 호출(Tool Calling) "
 categories:
   - LLM/RAG
   - LangChain

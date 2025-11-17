@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] sLLM 학습 시켜보기"
+title: "[LLM/RAG] LLM Appliation - 2. sLLM 학습 시켜보기"
 categories:
   - LLM/RAG
 
