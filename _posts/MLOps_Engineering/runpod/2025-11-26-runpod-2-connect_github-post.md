@@ -1,10 +1,10 @@
 ---
 title: "[MLOps/Engineering] RunPod - 2. Github 와 연동하기"
 categories:
-  - MLOPs/Engineering
+  - MLOps/Engineering
   - RunPod
 tags:
-  - MLOPs/Engineering
+  - MLOps/Engineering
   - RunPod
   
 use_math: true
