@@ -1,12 +1,10 @@
 ---
 title: "[LLM/RAG] LangChain - 2. LangChain의 Prompt와 PromptTemplate"
 categories:
-  - LLM/RAG
   - LangChain
+  
 tags:
-  - LLM/RAG
   - LangChain
-  - PromptTemplate
   
 use_math: true  
 toc: true

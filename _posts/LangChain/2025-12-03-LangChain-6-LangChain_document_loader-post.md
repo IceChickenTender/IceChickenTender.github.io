@@ -1,10 +1,8 @@
 ---
 title: "[LLM/RAG] LangChain - 6. LangChain의 Document Loader"
 categories:
-  - LLM/RAG
   - LangChain
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  

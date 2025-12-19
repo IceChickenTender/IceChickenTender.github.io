@@ -1,10 +1,8 @@
 ---
 title: "[LLM/RAG] "
 categories:
-  - LLM/RAG
   - LangChain
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  

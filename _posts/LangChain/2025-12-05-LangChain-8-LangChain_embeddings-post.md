@@ -1,10 +1,8 @@
 ---
 title: "[LLM/RAG] LangChain - 8. LangChain에서의 임베딩(Embedding) 알아보기"
 categories:
-  - LLM/RAG
   - LangChain
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  

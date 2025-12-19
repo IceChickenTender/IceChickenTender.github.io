@@ -1,10 +1,8 @@
 ---
 title: "[LLM/RAG] LangChain - 1. LangChain 시작하기"
 categories:
-  - LLM/RAG
   - LangChain
 tags:
-  - LLM/RAG
   - LangChain
 
 use_math: true  

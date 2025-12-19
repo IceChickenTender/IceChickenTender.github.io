@@ -1,10 +1,8 @@
 ---
 title: "[LLM/RAG] LangChain - 9. LangChain에서 사용하는 벡터저장소에 대해서 알아보자"
 categories:
-  - LLM/RAG
   - LangChain
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  

@@ -1,10 +1,9 @@
 ---
 title: "[LLM/RAG] LangChain - 4. LangChain의 Parser"
 categories:
-  - LLM/RAG
   - LangChain
+  
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  

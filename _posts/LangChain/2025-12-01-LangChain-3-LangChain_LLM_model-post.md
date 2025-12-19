@@ -1,10 +1,9 @@
 ---
 title: "[LLM/RAG] LangChain - 3. LangChain에서의 LLM"
 categories:
-  - LLM/RAG
   - LangChain
+  
 tags:
-  - LLM/RAG
   - LangChain
   
 use_math: true  
