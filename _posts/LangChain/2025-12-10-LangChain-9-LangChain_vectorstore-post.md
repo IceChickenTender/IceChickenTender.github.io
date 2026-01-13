@@ -827,7 +827,7 @@ plt.show()
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/coco_datasets.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/coco_datasets.png" width="80%" height="40%"/>
 </div>
 
 ### 2.3.2 Multimodal Embeddings를 이용해 임베딩 생성
@@ -913,7 +913,7 @@ model.invoke(image_uris[0])
 생성된 이미지 밑에 gpt-4o-mini로부터 받아온 설명이 함께 출력되어 있는 것을 볼 수 있습니다.
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/description_about_image.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/description_about_image.png" width="80%" height="40%"/>
 </div>
 
 <br>
@@ -999,7 +999,7 @@ plt.tight_layout()
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/image_with_description.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/image_with_description.png" width="80%" height="40%"/>
 </div>
 
 <br>
@@ -1062,7 +1062,7 @@ plt.title("Cosine similarity between text and image features", size=20)
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/cosine_similarity_between_text_image.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/cosine_similarity_between_text_image.png" width="80%" height="40%"/>
 </div>
 
 ### 2.3.3 벡터 저장소 생성 및 이미지 추가
@@ -1179,7 +1179,7 @@ result = image_retriever.invoke("A Dog on the street")
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/image_retriever_result1.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/image_retriever_result1.png" width="80%" height="40%"/>
 </div>
 
 <br>
@@ -1192,7 +1192,7 @@ result = image_retriever.invoke("Motorcycle with a man")
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/image_retriever_result2.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/image_retriever_result2.png" width="80%" height="40%"/>
 </div>
 
 # 3. FAISS
@@ -1542,7 +1542,7 @@ pc_index = create_index(
 위 코드를 실행하면 아래 이미지 처럼 본인의 index 항목에 새로운 index가 생긴 것을 확인할 수 있습니다.
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/pinecone_index.png" width="80%" height="40%"/>
+  <img src="/assets/images/langchain/9/pinecone_index.png" width="80%" height="40%"/>
 </div>
 
 ### 4.2.3 Sparse Encoder 생성
@@ -1654,7 +1654,7 @@ upsert_documents(
 위 코드를 이용해 Pinecone index에 upsert를 하게 되면 Pinecone의 index를 클릭했을 경우 아래와 같이 upsert된 데이터들을 확인할 수 있습니다.
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/upserted_index.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/9/upserted_index.png" width="65%" height="40%"/>
 </div>
 
 <br>
@@ -1662,7 +1662,7 @@ upsert_documents(
 그리고 각 데이터 오른쪽에 있는 $\cdots$ 모양을 클릭해 나오는 `Edit`를 클릭하면 나오면 화면에서 구체적인 정보를 확인할 수 있습니다.
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/9/upserted_data_info.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/9/upserted_data_info.png" width="65%" height="40%"/>
 </div>
 
 ## 4.4 인덱스 조회 및 네임스페이스 삭제

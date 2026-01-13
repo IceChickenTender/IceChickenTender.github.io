@@ -325,7 +325,7 @@ Wall time: 8.38 ms
 ```
 
 <div align="center">
-  <img src="/assets/images/llm_rag/langchain/3/sqlite_cache_file.png" width="50%" height="40%"/>
+  <img src="/assets/images/langchain/3/sqlite_cache_file.png" width="50%" height="40%"/>
 </div>
 
 # 3. LLM 모델을 사용할 수 있는 플랫폼들
