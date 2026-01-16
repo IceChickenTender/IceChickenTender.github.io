@@ -3,9 +3,10 @@ name: Update RAG Vector Store
 on:
   push:
     paths:
-      - '_posts/**/*.md' # _posts 폴더 내 파일 변경 시에만 실행
+      # _posts 폴더 및 그 하위의 모든 폴더(**) 내의 .md 파일을 감시합니다.
+      - '_posts/**/*.md' 
     branches:
-      - main     # 메인 브랜치 이름에 맞춰 수정 (예: master)
+      - main
       - feature/retriever_with_rag
 
 jobs:
@@ -15,7 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # 중요: 변경된 파일을 정확히 감지하기 위해 전체 히스토리를 가져옵니다.
           fetch-depth: 0 
 
       - name: Set up Python
@@ -27,21 +27,21 @@ jobs:
         run: |
           pip install langchain langchain-openai langchain-community supabase python-frontmatter
 
-      # [추가된 단계] 변경된 파일 목록을 가져와서 'changed-files'라는 ID로 저장합니다.
+      # [수정된 부분] files 패턴을 재귀적 패턴(**)으로 변경합니다.
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v41
         with:
-          files: _posts/*.md # _posts 폴더 내의 마크다운 파일만 감시
+          files: |
+             _posts/**/*.md
 
-      # [수정된 단계] 파이썬 스크립트 실행 시 변경된 파일 목록을 인자로 넘겨줍니다.
       - name: Run Update Script
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
-          # added_modified와 deleted 정보를 스크립트에 전달합니다.
+          # 인자로 전달되는 파일 경로들이 이제 'category/post.md' 형태로 전달됩니다.
           python scripts/sync_to_supabase.py \
             --added_modified "${{ steps.changed-files.outputs.all_changed_files }}" \
             --deleted "${{ steps.changed-files.outputs.deleted_files }}"
