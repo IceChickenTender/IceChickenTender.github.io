@@ -7,7 +7,6 @@ on:
       - '_posts/**/*.md' 
     branches:
       - main
-      - feature/retriever_with_rag
 
 jobs:
   update-vectors:
