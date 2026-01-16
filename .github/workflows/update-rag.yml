@@ -3,7 +3,7 @@ name: Update RAG Vector Store
 on:
   push:
     paths:
-      - '_posts/**' # _posts 폴더 내 파일 변경 시에만 실행
+      - '_posts/**/*.md' # _posts 폴더 내 파일 변경 시에만 실행
     branches:
       - main     # 메인 브랜치 이름에 맞춰 수정 (예: master)
       - feature/retriever_with_rag
