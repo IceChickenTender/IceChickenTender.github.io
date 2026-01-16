@@ -1,0 +1,42 @@
+/* AI 비서 전체 컨테이너 (항상 우측 하단 고정) */
+#ai-widget-container {
+  position: fixed;      /* 화면에 고정 */
+  bottom: 30px;         /* 하단에서 30px 띄움 */
+  right: 30px;          /* 우측에서 30px 띄움 */
+  z-index: 9999;        /* 가장 위에 오도록 */
+  font-family: var(--main-font-family, sans-serif); /* 블로그 폰트 상속 */
+}
+
+/* 채팅창 (기본은 숨김 상태) */
+#ai-chat-window {
+  display: none;        /* 초기엔 안 보이게 */
+  width: 450px;         /* 너비 450px (요청하신 와이드 크기) */
+  height: 600px;        /* 높이 600px */
+  background: #1e1e1e;  /* 다크 모드 배경색 */
+  border: 1px solid #444;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* 그림자 효과 */
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+/* 쿼카 아이콘 버튼 (우측 하단에 둥글게) */
+#ai-widget-button {
+  width: 70px;          /* 버튼 크기 */
+  height: 70px;
+  background: #333;     /* 버튼 배경색 */
+  border-radius: 50%;   /* 동그랗게 */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  float: right;
+  border: 2px solid #555; /* 테두리 추가 */
+}
+
+#ai-widget-button:hover {
+  transform: scale(1.1);    /* 마우스 올리면 살짝 커짐 */
+  box-shadow: 0 0 15px rgba(255,255,255,0.2);
+}

@@ -42,5 +42,291 @@
 
     {% include scripts.html %}
 
+    <style>
+      #ai-widget-container {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      }
+
+      /* 말풍선 가이드 */
+      #ai-welcome-bubble {
+        background: #007bff !important;
+        color: white !important;
+        padding: 10px 15px !important;
+        border-radius: 12px !important;
+        margin-bottom: 12px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        position: relative !important;
+        animation: bounce 2s infinite;
+        display: block;
+      }
+
+      #ai-welcome-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 25px;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #007bff;
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-5px);}
+        60% {transform: translateY(-3px);}
+      }
+
+      /* 버튼 펄스 효과 */
+      .pulse-effect {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(0, 123, 255, 0.4);
+        animation: pulse 2s infinite;
+        z-index: -1;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        100% { transform: scale(1.5); opacity: 0; }
+      }
+
+      #ai-chat-window {
+        display: none;
+        width: 450px;
+        max-width: 90vw;
+        height: 600px;
+        background: #1e1e1e !important;
+        border: 1px solid #444 !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        margin-bottom: 15px !important;
+      }
+
+      #ai-widget-button {
+        width: 65px !important;
+        height: 65px !important;
+        background: #333 !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        border: 2px solid #555 !important;
+      }
+
+      /* 메시지 박스 스크롤바 디자인 */
+      #ai-chat-messages::-webkit-scrollbar { width: 6px; }
+      #ai-chat-messages::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+
+      /* 입력창 (Textarea) 스타일 */
+      #ai-chat-input {
+        width: 100% !important;
+        background: #333 !important;
+        color: white !important;
+        border: 1px solid #555 !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        outline: none !important;
+        resize: none !important;
+        font-family: inherit !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+      }
+
+      /* --- 메시지 정렬 및 말풍선 스타일 수정 --- */
+      .chat-msg-container {
+        margin-bottom: 15px;
+        width: 100%;
+        display: block;
+      }
+
+      /* AI 메시지는 왼쪽 정렬 */
+      .chat-msg-container.ai { text-align: left; }
+      /* 사용자 메시지는 오른쪽 정렬 */
+      .chat-msg-container.user { text-align: right; }
+
+      .msg-label {
+        font-size: 11px;
+        color: #888;
+        margin-bottom: 4px;
+        display: block;
+      }
+      .ai .msg-label { margin-left: 4px; }
+      .user .msg-label { margin-right: 4px; }
+
+      .bubble {
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 12px;
+        max-width: 85%;
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-align: left; /* 말풍선 내부 텍스트는 왼쪽 정렬 유지 */
+      }
+
+      .user-bubble {
+        background: #007bff;
+        color: white;
+        border-bottom-right-radius: 2px; /* 오른쪽 하단 뾰족한 효과 */
+      }
+
+      .ai-bubble {
+        background: #333;
+        color: #eee;
+        border: 1px solid #444;
+        border-bottom-left-radius: 2px; /* 왼쪽 하단 뾰족한 효과 */
+      }
+
+      /* 로딩 애니메이션 (기존과 동일) */
+      .dot-flashing {
+        position: relative;
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 5px;
+        background-color: #007bff;
+        animation: dot-flashing 1s infinite linear alternate;
+        animation-delay: 0.5s;
+        margin: 0 15px;
+      }
+      .dot-flashing::before, .dot-flashing::after {
+        content: "";
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        width: 7px;
+        height: 7px;
+        border-radius: 5px;
+        background-color: #007bff;
+        animation: dot-flashing 1s infinite linear alternate;
+      }
+      .dot-flashing::before { left: -12px; animation-delay: 0s; }
+      .dot-flashing::after { left: 12px; animation-delay: 1s; }
+
+      @keyframes dot-flashing {
+        0% { background-color: #007bff; }
+        50%, 100% { background-color: rgba(0, 123, 255, 0.2); }
+      }      
+    </style>
+
+    <div id="ai-widget-container">
+      <div id="ai-welcome-bubble">
+        블로그 지식 검색, AI에게 물어보세요! 🔍
+      </div>
+
+      <div id="ai-chat-window">
+        <div style="padding: 15px 20px; background: #252525; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: white; font-weight: bold;">쿼카 AI 지식 비서 (LLM)</span>
+          <span id="ai-chat-close" style="cursor: pointer; color: #888; font-size: 24px;">&times;</span>
+        </div>
+        
+        <div id="ai-chat-messages" style="flex: 1; overflow-y: auto; padding: 20px; background: #1e1e1e;">
+          <div class="chat-msg-container ai">
+            <div class="msg-label">AI:</div>
+            <div class="ai-bubble">안녕하세요! 쿼카 AI입니다. 🦫<br>이 블로그에 작성된 포스트 내용을 바탕으로 답변해 드립니다.</div>
+          </div>
+        </div>
+
+        <div style="padding: 15px; background: #252525; border-top: 1px solid #444;">
+          <textarea id="ai-chat-input" rows="2" placeholder="질문을 입력하세요... (Enter로 전송)"></textarea>
+          <div style="font-size: 10px; color: #666; margin-top: 4px; text-align: right;">Shift + Enter로 줄바꿈</div>
+        </div>
+      </div>
+
+      <div id="ai-widget-button">
+        <div class="pulse-effect"></div> 
+        <img src="/assets/images/profile_image.png" alt="AI" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const btn = document.getElementById('ai-widget-button');
+        const win = document.getElementById('ai-chat-window');
+        const bubble = document.getElementById('ai-welcome-bubble');
+        const cls = document.getElementById('ai-chat-close');
+        const input = document.getElementById('ai-chat-input');
+        const msgBox = document.getElementById('ai-chat-messages');
+
+        btn.onclick = () => {
+          const isHidden = win.style.display === 'none' || win.style.display === '';
+          win.style.display = isHidden ? 'flex' : 'none';
+          if (bubble) bubble.style.display = 'none';
+          if (isHidden) input.focus();
+        };
+        cls.onclick = () => { win.style.display = 'none'; };
+
+        input.onkeydown = async (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            
+            const query = input.value.trim();
+            if (query === '') return;
+
+            // [사용자 메시지 출력] .user 클래스 추가하여 오른쪽 정렬
+            msgBox.innerHTML += `
+              <div class="chat-msg-container user">
+                <div class="msg-label">나:</div>
+                <div class="bubble user-bubble">${query}</div>
+              </div>`;
+            
+            input.value = '';
+            msgBox.scrollTop = msgBox.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            msgBox.innerHTML += `
+              <div id="${loadingId}" class="chat-msg-container ai">
+                <div class="msg-label">AI:</div>
+                <div class="bubble ai-bubble">
+                  <span class="dot-flashing"></span> 생각 중...
+                </div>
+              </div>`;
+            msgBox.scrollTop = msgBox.scrollHeight;
+
+            try {
+              const res = await fetch('https://toy-project-rag-in-blog.vercel.app/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+              });
+              const data = await res.json();
+              
+              const loadingElement = document.getElementById(loadingId);
+              if (loadingElement) loadingElement.remove();
+
+              msgBox.innerHTML += `
+                <div class="chat-msg-container ai">
+                  <div class="msg-label">AI:</div>
+                  <div class="bubble ai-bubble">${data.answer}</div>
+                </div>`;
+            } catch (err) {
+              const loadingElement = document.getElementById(loadingId);
+              if (loadingElement) {
+                loadingElement.innerHTML = `<div class="msg-label">AI:</div><div class="bubble ai-bubble" style="color: #ff6b6b;">통신 오류가 발생했습니다.</div>`;
+              }
+            }
+            msgBox.scrollTop = msgBox.scrollHeight;
+          }
+        };
+      })();
+    </script>  
   </body>
 </html>
