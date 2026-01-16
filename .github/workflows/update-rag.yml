@@ -6,7 +6,7 @@ on:
       # _posts 폴더 및 그 하위의 모든 폴더(**) 내의 .md 파일을 감시합니다.
       - '_posts/**/*.md' 
     branches:
-      - main
+      - master
 
 jobs:
   update-vectors:
