@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] "
+title: "[LangChain] "
 categories:
   - LangChain
 tags:

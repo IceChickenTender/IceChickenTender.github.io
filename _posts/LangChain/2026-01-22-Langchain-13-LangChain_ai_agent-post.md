@@ -1,5 +1,5 @@
 ---
-title: "[LLM/RAG] LangChain - 13. LangChain에서의 AI Agent에 대해 알아보자"
+title: "[LangChain] LangChain - 13. LangChain에서의 AI Agent에 대해 알아보자"
 categories:
   - LangChain
 tags:
