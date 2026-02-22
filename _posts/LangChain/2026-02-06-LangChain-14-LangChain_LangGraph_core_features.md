@@ -272,7 +272,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/chatbot_graph.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/chatbot_graph.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -506,7 +506,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_chatbot_with_agent.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_chatbot_with_agent.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -2251,7 +2251,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_chatbot_with_human.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_chatbot_with_human.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -2678,7 +2678,7 @@ visualize_graph(app)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_removemessage.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_removemessage.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -2809,7 +2809,7 @@ graph = builder.compile()
 그래프를 시각화하면 다음과 같습니다.
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_parallel_graph1.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_parallel_graph1.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -2886,7 +2886,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_parallel_graph2.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_parallel_graph2.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -2978,7 +2978,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_parallel_graph3.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_parallel_graph3.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -3117,7 +3117,7 @@ visualize_graph(graph)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_parallel_graph4.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_parallel_graph4.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -3295,7 +3295,7 @@ app = workflow.compile(checkpointer=memory)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_conversaion_summary.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_conversaion_summary.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -3524,7 +3524,7 @@ visualize_graph(subgraph, xray=True)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_subgraph1.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_subgraph1.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -3557,7 +3557,7 @@ visualize_graph(subgraph, xray=True)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_subgraph2.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_subgraph2.png" width="25%" height="40%"/>
 </div>
 
 <br>
@@ -3657,7 +3657,7 @@ visualize_graph(graph, xray=True)
 ```
 
 <div align="center">
-  <img src="/assets/images/langchain/14/langgraph_subgraph2.png" width="65%" height="40%"/>
+  <img src="/assets/images/langchain/14/langgraph_subgraph2.png" width="25%" height="40%"/>
 </div>
 
 <br>
