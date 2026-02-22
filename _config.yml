@@ -108,15 +108,15 @@ author:
   location         : "Republic of Korea" # 왼쪽 프로필 화면에서 지역을 나타냄
   email            :
   links:
-    - label: "Email<br>이메일 확인이 늦어질 수 있습니다"
+    - label: "seungwooklee76@gmail.com<br>이메일 확인이 늦어질 수 있습니다"
       icon: "fas fa-fw fa-envelope-square"
       url: "mailto:seungwooklee76@gmail.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       url: "https://icechickentender.github.io"  
-    - label: "GitHub"
+    - label: "Github<br>https://github.com/IceChickenTender/"
       icon: "fab fa-fw fa-github"
-      url: "https://github.com/IceChickenTender/IceChickenTender.github.io"  
+      url: "https://github.com/IceChickenTender/"  
     #- label: "Twitter"
     #  icon: "fab fa-fw fa-twitter-square"
       # url: "https://twitter.com/"
