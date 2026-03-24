@@ -55,6 +55,11 @@ def process_sync(added_modified_files, deleted_files):
         if not file_path.endswith(".md") or not os.path.exists(file_path):
             continue
         
+        filename = os.path.basename(file_path)
+
+        if "sample" in filename:
+            continue
+        
         with open(file_path, 'r', encoding='utf-8') as f:
             post = frontmatter.load(f)
 
