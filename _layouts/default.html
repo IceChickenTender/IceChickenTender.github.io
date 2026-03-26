@@ -256,6 +256,8 @@
         <img src="/assets/images/profile_image.png" alt="AI" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
       </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
       (function() {
@@ -265,6 +267,13 @@
         const cls = document.getElementById('ai-chat-close');
         const input = document.getElementById('ai-chat-input');
         const msgBox = document.getElementById('ai-chat-messages');
+
+        // [이유1] marked 설정: 보안을 위해 HTML 태그를 해석하지 않고, 줄바꿈(\n)을 
+        // <br>로 자동 변환하도록 설정합니다.
+        marked.setOptions({
+          sanitize: true, // 사용자가 입력한 HTML 태그 등은 렌더링하지 않음 (보안)
+          breaks: true    // 단일 줄바꿈(\n)도 <br>로 변환 (가독성 향상)
+        });
 
         btn.onclick = () => {
           const isHidden = win.style.display === 'none' || win.style.display === '';
@@ -281,7 +290,7 @@
             const query = input.value.trim();
             if (query === '') return;
 
-            // [사용자 메시지 출력] .user 클래스 추가하여 오른쪽 정렬
+            // 사용자 메시지 출력
             msgBox.innerHTML += `
               <div class="chat-msg-container user">
                 <div class="msg-label">나:</div>
@@ -292,6 +301,7 @@
             msgBox.scrollTop = msgBox.scrollHeight;
 
             const loadingId = 'loading-' + Date.now();
+            const aiMsgId = 'ai-msg-' + Date.now();
             msgBox.innerHTML += `
               <div id="${loadingId}" class="chat-msg-container ai">
                 <div class="msg-label">AI:</div>
@@ -301,32 +311,225 @@
               </div>`;
             msgBox.scrollTop = msgBox.scrollHeight;
 
+            // [이유2] 답변 데이터 축적 변수: 스트리밍으로 오는 모든 데이터를 여기에 축적합니다.
+            let accumulatedText = ""; 
+
             try {
-              const res = await fetch('https://toy-project-rag-in-blog.vercel.app/api/chat', {
+              const response = await fetch('https://toy-project-rag-in-blog.vercel.app/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: query })
               });
-              const data = await res.json();
-              
+
+              if (!response.ok) throw new Error('서버 응답 오류');
+
+              // 로딩 표시 제거 및 답변 버블 준비
               const loadingElement = document.getElementById(loadingId);
               if (loadingElement) loadingElement.remove();
 
               msgBox.innerHTML += `
                 <div class="chat-msg-container ai">
                   <div class="msg-label">AI:</div>
-                  <div class="bubble ai-bubble">${data.answer}</div>
+                  <div id="${aiMsgId}" class="bubble ai-bubble markdown-body"></div>
                 </div>`;
+              const aiBubble = document.getElementById(aiMsgId);
+
+              // 스트림 읽기
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder();
+              let done = false;
+
+              // default.html 내의 파싱 로직 수정
+
+              // default.html 내의 스트리밍 파싱 로직 (최종 수정본)
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunkValue = decoder.decode(value);
+                const lines = chunkValue.split('\n');
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    // 1. 'data: ' 떼어내고, 보호된 줄바꿈(\\n)을 실제 줄바꿈(\n)으로 복구
+                    let content = line.slice(6).replace(/\\n/g, '\n'); 
+                    
+                    if (content.trim() === '[DONE]') continue;
+
+                    // 2. 텍스트 누적 및 렌더링
+                    accumulatedText += content;
+                    if (typeof marked !== 'undefined') {
+                      aiBubble.innerHTML = marked.parse(accumulatedText);
+                    }
+                  }
+                }
+                msgBox.scrollTop = msgBox.scrollHeight;
+              }
+
             } catch (err) {
               const loadingElement = document.getElementById(loadingId);
               if (loadingElement) {
                 loadingElement.innerHTML = `<div class="msg-label">AI:</div><div class="bubble ai-bubble" style="color: #ff6b6b;">통신 오류가 발생했습니다.</div>`;
               }
+              console.error(err);
             }
             msgBox.scrollTop = msgBox.scrollHeight;
           }
         };
       })();
-    </script>  
+    </script>
+
+    <style>
+      /* 1. 전체 컨테이너 및 고정 위치 */
+      #ai-widget-container {
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 30px !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      }
+
+      /* 2. 말풍선 가이드 (애니메이션 포함) */
+      #ai-welcome-bubble {
+        background: #007bff !important;
+        color: white !important;
+        padding: 10px 15px !important;
+        border-radius: 12px !important;
+        margin-bottom: 12px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        position: relative !important;
+        animation: bounce 2s infinite;
+      }
+      #ai-welcome-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 25px;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #007bff;
+      }
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-5px);}
+        60% {transform: translateY(-3px);}
+      }
+
+      /* 3. 채팅창 기본 스타일 */
+      #ai-chat-window {
+        display: none; /* 초기 숨김 */
+        width: 450px;
+        max-width: 90vw;
+        height: 600px;
+        background: #1e1e1e !important;
+        border: 1px solid #444 !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        margin-bottom: 15px !important;
+      }
+
+      /* 4. 메시지 박스 및 스크롤바 */
+      #ai-chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #1e1e1e;
+      }
+      #ai-chat-messages::-webkit-scrollbar { width: 6px; }
+      #ai-chat-messages::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+
+      /* 5. 입력창 (Textarea) */
+      #ai-chat-input {
+        width: 100% !important;
+        background: #333 !important;
+        color: white !important;
+        border: 1px solid #555 !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        outline: none !important;
+        resize: none !important;
+        font-size: 14px !important;
+      }
+
+      /* 6. 메시지 말풍선 공통 */
+      .chat-msg-container { margin-bottom: 20px; width: 100%; display: block; }
+      .chat-msg-container.ai { text-align: left; }
+      .chat-msg-container.user { text-align: right; }
+      .msg-label { font-size: 11px; color: #888; margin-bottom: 5px; display: block; }
+      .bubble { display: inline-block; padding: 12px 16px; border-radius: 12px; max-width: 85%; font-size: 14.5px; text-align: left; }
+      
+      .user-bubble { background: #007bff; color: white; border-bottom-right-radius: 2px; }
+
+      /* ⭐ [가독성 핵심] AI 마크다운 답변 스타일 ⭐ */
+      .ai-bubble.markdown-body {
+        background: #333;
+        color: #eee !important;
+        border: 1px solid #444;
+        border-bottom-left-radius: 2px;
+        line-height: 1.8 !important;    /* 줄 간격을 넓혀 시원하게 */
+        white-space: normal !important; /* 마크다운 레이아웃 허용 */
+      }
+
+      /* 단락(Paragraph) 간격 */
+      .ai-bubble.markdown-body p {
+        margin: 0 0 1.2em 0 !important; /* 문단 사이의 확실한 거리 */
+      }
+
+      /* 목록(List) 간격 */
+      .ai-bubble.markdown-body ul, .ai-bubble.markdown-body ol {
+        margin: 0 0 1em 1.2em !important;
+      }
+      .ai-bubble.markdown-body li {
+        margin-bottom: 8px !important;
+      }
+
+      /* 강조(Bold) 효과 */
+      .ai-bubble.markdown-body strong {
+        color: #fff !important;
+        font-weight: 700 !important;
+        background: rgba(0, 123, 255, 0.15); /* 살짝 배경 강조 */
+        padding: 0 2px;
+      }
+
+      /* 7. 위젯 버튼 및 펄스 효과 */
+      #ai-widget-button {
+        width: 65px !important;
+        height: 65px !important;
+        background: #333 !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        border: 2px solid #555 !important;
+      }
+      .pulse-effect {
+        position: absolute; width: 100%; height: 100%; border-radius: 50%;
+        background: rgba(0, 123, 255, 0.4); animation: pulse 2s infinite; z-index: -1;
+      }
+      @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+
+      /* 8. 로딩 애니메이션 (Dot Flashing) */
+      .dot-flashing {
+        position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 5px;
+        background-color: #007bff; animation: dot-flashing 1s infinite linear alternate;
+        animation-delay: 0.5s; margin: 0 15px;
+      }
+      .dot-flashing::before, .dot-flashing::after {
+        content: ""; display: inline-block; position: absolute; top: 0; width: 7px; height: 7px;
+        border-radius: 5px; background-color: #007bff; animation: dot-flashing 1s infinite linear alternate;
+      }
+      .dot-flashing::before { left: -12px; animation-delay: 0s; }
+      .dot-flashing::after { left: 12px; animation-delay: 1s; }
+      @keyframes dot-flashing { 0% { background-color: #007bff; } 50%, 100% { background-color: rgba(0, 123, 255, 0.2); } }
+    </style>
   </body>
 </html>
