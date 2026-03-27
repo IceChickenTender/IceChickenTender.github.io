@@ -2,10 +2,10 @@
 title: "[Algorithm] 다이나믹 프로그래밍 개념"
 categories:
   - Algorithm
-  - Python
+  
 tags:
   - Algorithm
-  - Python
+  
   
 use_math: true
 toc: true

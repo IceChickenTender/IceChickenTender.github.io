@@ -2,10 +2,10 @@
 title: "[Algorithm][Python] 탐욕(Greedy) 알고리즘"
 categories:
   - Algorithm
-  - Python
+
 tags:
   - Algorithm
-  - Python
+
   
 toc: true
 toc_sticky: true

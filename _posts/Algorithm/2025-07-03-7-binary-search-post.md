@@ -2,10 +2,10 @@
 title: "[Algorithm] 이진 탐색"
 categories:
   - Algorithm
-  - Python
+  
 tags:
   - Algorithm
-  - Python
+  
   
 use_math: true
 toc: true

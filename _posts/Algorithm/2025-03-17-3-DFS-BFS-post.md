@@ -2,10 +2,10 @@
 title: "[Algorithm] 탐색 알고리즘 DFS/BFS"
 categories:
   - Algorithm
-  - Python
+  
 tags:
   - Algorithm
-  - Python
+  
 
 toc: true
 toc_sticky: true
