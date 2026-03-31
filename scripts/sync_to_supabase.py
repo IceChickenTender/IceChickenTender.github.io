@@ -10,7 +10,7 @@ from langchain_core.documents import Document
 
 # 1. 환경 변수 및 설정
 URL = os.environ.get("SUPABASE_URL")
-KEY = os.environ.get("SUPABASE_KEY")
+KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # supabase 클라이언트 및 임베딩 모델 초기화
