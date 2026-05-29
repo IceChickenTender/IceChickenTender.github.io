@@ -1,9 +1,9 @@
 ---
-title: "[Algorithm] 소수 판별 방법"
+title: "[AlgorithmTheory] 소수 판별 방법"
 categories:
-  - Algorithm
+  - AlgorithmTheory
 tags:
-  - Algorithm
+  - AlgorithmTheory
 
 use_math: true  
 toc: true

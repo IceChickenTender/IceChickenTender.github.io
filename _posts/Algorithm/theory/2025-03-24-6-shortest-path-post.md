@@ -1,10 +1,10 @@
 ---
-title: "[Algorithm] 최단 경로 알고리즘 개념"
+title: "[AlgorithmTheory] 최단 경로 알고리즘 개념"
 categories:
-  - Algorithm
+  - AlgorithmTheory
   
 tags:
-  - Algorithm
+  - AlgorithmTheory
   
   
 use_math: true

@@ -1,10 +1,10 @@
 ---
-title: "[Algorithm] 이진 탐색"
+title: "[AlgorithmTheory] 이진 탐색"
 categories:
-  - Algorithm
+  - AlgorithmTheory
   
 tags:
-  - Algorithm
+  - AlgorithmTheory
   
   
 use_math: true

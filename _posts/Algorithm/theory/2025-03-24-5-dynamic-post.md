@@ -1,10 +1,10 @@
 ---
-title: "[Algorithm] 다이나믹 프로그래밍 개념"
+title: "[AlgorithmTheory] 다이나믹 프로그래밍 개념"
 categories:
-  - Algorithm
+  - AlgorithmTheory
   
 tags:
-  - Algorithm
+  - AlgorithmTheory
   
   
 use_math: true

@@ -1,10 +1,10 @@
 ---
-title: "[Algorithm] 탐색 알고리즘 DFS/BFS"
+title: "[AlgorithmTheory] 탐색 알고리즘 DFS/BFS"
 categories:
-  - Algorithm
+  - AlgorithmTheory
   
 tags:
-  - Algorithm
+  - AlgorithmTheory
   
 
 toc: true

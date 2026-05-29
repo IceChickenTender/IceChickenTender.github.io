@@ -1,10 +1,10 @@
 ---
-title: "[Algorithm][Python] 탐욕(Greedy) 알고리즘"
+title: "[AlgorithmTheory] 탐욕(Greedy) 알고리즘"
 categories:
-  - Algorithm
+  - AlgorithmTheory
 
 tags:
-  - Algorithm
+  - AlgorithmTheory
 
   
 toc: true
