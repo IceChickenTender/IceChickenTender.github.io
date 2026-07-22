@@ -65,6 +65,7 @@ DP는 단순히 문제를 많이 푼다고 실력이 늘지 않습니다. 새로
 2. 무한 배낭 문제(Unbounded Knapsack):
 
     동전 교환 문제처럼 같은 아이템을 무제한으로 쓸 수 있는 유형으로 정방향 1차원 배열 탐색을 사용합니다.
+    [배낭채우기1 문제풀이 Link](https://icechickentender.github.io/algorithmsolving/jungol-1077-dp/)
 
 3. 최장 증가 부분 수열(LIS, Longest Increasing Subsequence):
 
