@@ -1,10 +1,11 @@
 ---
-title: "[Algorithm]"
+title: "[AlgorithmTheory] "
 categories:
-  - Algorithm
+  - AlgorithmTheory
 tags:
-  - Algorithm
+  - AlgorithmTheory
   
+use_math: true
 toc: true
 toc_sticky: true
 toc_label: ""
