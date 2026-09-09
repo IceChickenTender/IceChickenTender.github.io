@@ -424,3 +424,90 @@ async def get_users(name: str):
 ```
 
 따라서 FastAPI에서는 함수의 타입 힌트와 기본값을 통해 Query Parameter의 타입과 필수 여부를 함께 표현할 수 있습니다.
+
+# 6. Request Body
+
+## 6.1 Request Body란?
+
+`Request Body`는 Client가 Server에 보내는 HTTP Request의 본문(Body)에 담기는 데이터를 의미합니다.
+
+지금까지 살펴본 Path Parameter와 Query Parameter 역시 Client가 Server로 데이터를 전달하는 방법이지만, 데이터가 전달되는 위치가 다릅니다.
+
+- Path Parameter: URL 경로에 포함되는 데이터
+- Query Parameter: URL의 Query String에 포함되는 데이터
+- Request Body: HTTP Request의 Body에 포함되는 데이터
+
+Request Body는 여러 필드로 구성된 구조화된 데이터를 서버로 전달할 때 주로 사용합니다. 반대로 Server가 Client에게 응답하면서 전달하는 본문의 데이터는 `Response Body`라고 합니다.
+
+## 6.2 FastAPI에서 Request Body 사용하기
+
+Fast API에서는 일반적으로 Pydantic의 `BaseModel`을 이용하여 Request Body의 데이터 구조를 정의합니다.
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Item(BaseModel):
+  name: str
+  description: str | None = None
+  price: float
+  tax: float | None = None
+
+@app.post("/items/")
+async def create_item(item: Item):
+  return item
+```
+
+위 코드를 보면 Item은 Client가 전달할 Request Body의 데이터 구조를 나타냅니다. 그리고 Path Operation Function에서 Pydantic Model을 타입으로 선언합니다. FastAPI를 이를 보고 `item`을 Request Body에서 가져와야 하는 데이터로 판단합니다.
+
+이후 Request Body로 전달된 데이터를 `Item` 모델에 맞게 처리하여 Python 객체로 함수에 전달합니다.
+
+따라서 개발자는 Request Body의 JSON 데이터를 직접 파싱하지 않고, `item.name`, `item.price`와 같이 Python 객체로 사용할 수 있습니다.
+
+## 6.3 Path / Query / Request Body 차이
+
+세 가지 방식은 모두 Client가 Server로 데이터를 전달하는 방법이지만 용도가 다릅니다.
+
+|구분|데이터 위치|주된 용도|
+|-|-|-|
+|Path Parameter|URL Path|특정 Resource 식별|
+|Query Parameter|Query String|조회 조건, 필터링 등의 부가 정보 전달|
+|Request Body|HTTP Request Body|구조화된 데이터 전달|
+
+FastAPI는 Path Operation Function의 Parameter 선언을 바탕으로 각각 구분합니다.
+
+- URL의 Path의 `{parameter}`와 이름이 일치하면 Path Parameter
+- Path에 포함되지 않은 일반적인 단순 타입 Parameter는 Query Parameter
+- Pydantic Model 타입의 Parameter는 Request Body
+
+따라서 FastAPI에서는 별도의 Request Body 파싱 코드를 직접 작성하지 않아도 함수의 Parameter와 타입 선언을 통해 요청 데이터를 받을 수 있습니다.
+
+## 6.4 Requst Body와 Pydantic
+
+FastAPI에서 Request Body를 이해할 때 가장 중요한 부분은 Pydantic과의 관계입니다. Pydantic Model은 Request Body가 어떤 필드를 가지며 각 필드가 어떤 타입이어야 하는지를 정의합니다.
+
+```python
+class Item(BasemModel):
+  name: str
+  price: float
+```
+
+FastAPI는 이 모델을 기준으로 Client가 전달한 Request Body를 처리합니다.
+
+```
+HTTP Request Body 
+        ↓ 
+Pydantic Model 
+        ↓ 
+데이터 구조 및 타입 확인 
+        ↓ 
+Python Object 
+        ↓ 
+Path Operation Function
+```
+
+즉, Pydantic Model은 단순히 Request Body의 형태를 표현하는 역할만 하는 것이 아니라 전달받은 데이터가 정의된 구조와 타입에 맞는지 검증하는 역할도 합니다. 또한 FastAPI는 Pydantic Model의 정보를 활용하여 OpenAPI Schema와 API 문서를 자동으로 생성합니다. 따라서 Request Body의 핵심은 다음과 같이 정리할 수 있습니다.
+
+> Request Body는 Client가 HTTP Request의 Body를 통해 Server로 전달하는 데이터이며, FastAPI에서는 Pydantic Model을 이용하여 그 데이터의 구조를 정의하고 검증한 뒤 Python 객체로 사용할 수 있도록 처리합니다.
